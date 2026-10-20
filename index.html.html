@@ -1,0 +1,2119 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Welche Bäume wachsen im Wald? – HSU-Quiz</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Kindgerechte Grundschul-Schriftart (Quicksand & Comic Neue) -->
+    <link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&family=Quicksand:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sage-bg: #dce3d1;
+            --sage-card: #fcfdf9;
+            --forest-dark: #2c4c32;
+            --forest-mid: #4a7853;
+            --forest-light: #7fa668;
+            --wood-brown: #8b5a2b;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100dvh;
+            overflow: hidden;
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--sage-bg);
+            background-image: 
+                radial-gradient(circle at 12% 18%, rgba(127, 166, 104, 0.22) 0%, transparent 40%),
+                radial-gradient(circle at 88% 82%, rgba(74, 120, 83, 0.18) 0%, transparent 45%);
+            color: #1f2937;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .school-title {
+            font-family: 'Comic Neue', 'Quicksand', cursive, sans-serif;
+        }
+
+        /* Samsung Tablet 16:10 Landscape Container */
+        #quiz-card {
+            width: 95vw;
+            max-width: 1120px;
+            height: 90dvh;
+            max-height: 700px;
+            background-color: var(--sage-card);
+            border: 4px solid var(--forest-mid);
+            border-radius: 28px;
+            box-shadow: 0 14px 32px rgba(31, 58, 36, 0.16), 0 4px 0 #36593d;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Lückentext-Felder (Landscape Tablet-optimiert) */
+        .cloze-slot {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 145px;
+            height: 44px;
+            padding: 0 14px;
+            margin: 4px 5px;
+            border: 3px dashed #5c8a58;
+            border-radius: 14px;
+            background-color: #eef5e9;
+            color: #2c4c32;
+            font-weight: 800;
+            font-size: 1.15rem;
+            vertical-align: middle;
+            transition: all 0.18s ease;
+            cursor: pointer;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .cloze-slot.drag-over {
+            background-color: #fde68a;
+            border-color: #d97706;
+            transform: scale(1.05);
+        }
+
+        .cloze-slot.filled {
+            border-style: solid;
+            border-color: #3b7a47;
+            background-color: #ffffff;
+            box-shadow: 0 3px 0 #3b7a47;
+        }
+
+        .cloze-slot.correct-slot {
+            border-color: #16a34a !important;
+            background-color: #dcfce7 !important;
+            color: #14532d !important;
+            box-shadow: 0 3px 0 #16a34a !important;
+        }
+
+        .cloze-slot.wrong-slot {
+            border-color: #dc2626 !important;
+            background-color: #fee2e2 !important;
+            color: #7f1d1d !important;
+            box-shadow: 0 3px 0 #dc2626 !important;
+        }
+
+        /* Wortkarten (Drag & Drop + Tablet-Tippen) */
+        .word-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 20px;
+            background: #ffffff;
+            border: 3px solid #4a7853;
+            border-radius: 16px;
+            box-shadow: 0 4px 0 #36593d;
+            font-weight: 800;
+            font-size: 1.15rem;
+            color: #233d28;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .word-chip:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #36593d;
+        }
+
+        .word-chip.selected-chip {
+            background-color: #fef08a;
+            border-color: #ca8a04;
+            box-shadow: 0 4px 0 #a16207;
+            transform: scale(1.05);
+        }
+
+        .word-chip.used-chip {
+            opacity: 0.28;
+            pointer-events: none;
+            transform: scale(0.95);
+        }
+
+        /* Bild-Zuordnungs-Boxen */
+        .match-dropzone {
+            border: 3px dashed #6b9067;
+            border-radius: 20px;
+            background-color: #f3f7f0;
+            transition: all 0.2s ease;
+        }
+
+        .match-dropzone.drag-over,
+        .match-dropzone.ready-to-place {
+            background-color: #fef9c3;
+            border-color: #eab308;
+        }
+
+        /* Grundschul-Lineatur Klasse 2 & 3 Optik für offene Fragen */
+        .lineatur-box {
+            background: linear-gradient(
+                to bottom,
+                #ffffff 0%,
+                #ffffff 24%,
+                #93c5fd 24%,
+                #93c5fd 26%,
+                #ffffff 26%,
+                #ffffff 49%,
+                #93c5fd 49%,
+                #93c5fd 51%,
+                #f0fdf4 51%,
+                #f0fdf4 75%,
+                #3b82f6 75%,
+                #3b82f6 78%,
+                #ffffff 78%,
+                #ffffff 100%
+            );
+        }
+
+        .lineatur-input {
+            background: transparent;
+            user-select: text;
+            -webkit-user-select: text;
+        }
+
+        /* Sanfte Animationen */
+        @keyframes popIn {
+            0% { transform: scale(0.97); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-pop {
+            animation: popIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-4px); }
+        }
+        .mascot-float {
+            animation: floatSlow 3.2s ease-in-out infinite;
+        }
+
+        /* Dezenter Hinweis, falls Tablet hochkant gehalten wird */
+        #portrait-warning {
+            display: none;
+        }
+        @media (orientation: portrait) and (max-width: 768px) {
+            #portrait-warning.show-hint {
+                display: flex;
+            }
+        }
+
+        /* Konfetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center">
+
+    <!-- Konfetti für die Endfolie -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Freundlicher Hinweis bei Hochformat (wegklickbar) -->
+    <div id="portrait-warning" class="show-hint fixed top-2 left-1/2 -translate-x-1/2 z-40 bg-amber-100 border-2 border-amber-500 text-amber-950 px-4 py-1.5 rounded-full shadow-md items-center gap-2 text-xs font-extrabold">
+        <span>🔄 Tipp: Dreh dein Samsung Tablet ins Querformat!</span>
+        <button onclick="document.getElementById('portrait-warning').classList.remove('show-hint')" class="ml-1 bg-amber-200 px-2 py-0.5 rounded-full">✕</button>
+    </div>
+
+    <!-- AUSSCHLIESSLICH DIE ZENTRALE QUIZ-KARTE IM 16:10 QUERFORMAT -->
+    <main id="quiz-card" class="p-5 sm:p-6 md:px-8 md:py-6">
+        <!-- Dynamischer Inhalt wird hier per JavaScript gerendert -->
+    </main>
+
+    <script>
+        /********************************************************************
+         * 1. ORIGINALGETREUE ILLUSTRATIONEN (FreuleinBerg Tafelmaterial-Stil)
+         *    Mit schwarzen Outlines und Aquarell-/Farbschattierungen wie im PDF
+         ********************************************************************/
+        const ILLUSTRATIONS = {
+            // --- TITELBILD: KIEFERNZAPFEN AM ZWEIG (Deckblatt rechts unten) ---
+            kiefer_kombi: {
+                label: "Kiefernzweig mit Zapfen",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <!-- Kiefernzweig mit langen Nadelpaaren -->
+                    <path d="M 18 52 C 75 74, 135 88, 222 92 M 58 66 L 34 118" stroke="#7c5330" stroke-width="8" stroke-linecap="round" fill="none"/>
+                    <g stroke="#1b3318" stroke-width="2.6" stroke-linecap="round">
+                        <path d="M 42 58 L 20 14 M 42 58 L 36 12 M 68 68 L 58 16 M 68 68 L 74 16 M 96 76 L 98 20 M 96 76 L 114 22"/>
+                        <path d="M 138 84 L 154 26 M 138 84 L 170 30 M 168 88 L 194 36 M 168 88 L 210 46 M 196 90 L 228 62 M 196 90 L 232 78"/>
+                        <path d="M 152 86 L 166 138 M 152 86 L 182 134 M 182 90 L 198 138 M 182 90 L 214 132"/>
+                    </g>
+                    <!-- Hängender Zapfen in der Mitte -->
+                    <path d="M 106 76 C 126 78, 134 106, 130 142 C 126 164, 114 174, 102 174 C 90 174, 80 162, 78 138 C 76 104, 86 76, 106 76 Z"
+                          fill="#8c583a" stroke="#140d06" stroke-width="4"/>
+                    <path d="M 84 96 Q 105 110 126 96 M 80 114 Q 105 128 128 114 M 80 132 Q 105 146 128 132 M 84 150 Q 105 162 122 150
+                             M 95 86 L 105 102 L 115 86 M 92 104 L 105 120 L 118 104 M 92 122 L 105 138 L 118 122 M 94 140 L 105 156 L 116 140"
+                          stroke="#1f1409" stroke-width="2.8" fill="none"/>
+                </svg>`
+            },
+
+            // --- 1. DIE EICHE (Seite 5 & 32) ---
+            eiche_blatt: {
+                label: "Blatt der Eiche",
+                svg: `<svg viewBox="0 0 220 180" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="oakLeafGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#557d29"/>
+                            <stop offset="55%" stop-color="#43691d"/>
+                            <stop offset="100%" stop-color="#2e4d10"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 16 168 Q 34 150 48 135" stroke="#6b7c32" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    <path d="M 46 136
+                             C 33 128, 30 106, 46 104
+                             C 54 103, 52 94, 44 86
+                             C 32 73, 48 52, 66 64
+                             C 74 69, 77 61, 72 48
+                             C 65 28, 90 16, 105 35
+                             C 111 43, 116 35, 115 24
+                             C 113 8, 140 6, 150 23
+                             C 155 30, 164 20, 174 14
+                             C 190 5, 208 20, 198 39
+                             C 194 47, 210 56, 203 72
+                             C 197 84, 185 83, 190 95
+                             C 196 110, 179 126, 161 116
+                             C 151 110, 147 118, 154 131
+                             C 162 146, 141 162, 123 145
+                             C 113 135, 107 142, 111 153
+                             C 115 166, 90 171, 80 154
+                             C 74 144, 67 150, 67 157
+                             C 65 167, 48 155, 46 136 Z" 
+                          fill="url(#oakLeafGrad)" stroke="#1e3309" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M 46 136 L 188 26" stroke="#789e42" stroke-width="3.2" stroke-linecap="round"/>
+                    <path d="M 72 115 L 54 70 M 98 95 L 88 32 M 126 73 L 130 20 M 155 52 L 168 20
+                             M 78 111 L 102 154 M 108 88 L 144 138 M 138 64 L 180 105" 
+                          stroke="#789e42" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+                </svg>`
+            },
+            eiche_frucht: {
+                label: "Eichel",
+                svg: `<svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <radialGradient id="acornNut" cx="35%" cy="40%" r="65%">
+                            <stop offset="0%" stop-color="#e6b481"/>
+                            <stop offset="60%" stop-color="#c98b52"/>
+                            <stop offset="100%" stop-color="#9e622d"/>
+                        </radialGradient>
+                        <linearGradient id="acornCap" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#bda084"/>
+                            <stop offset="100%" stop-color="#876649"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 45 82 C 35 125, 52 168, 82 180 C 86 188, 98 188, 103 180 C 136 168, 158 128, 152 86 Z"
+                          fill="url(#acornNut)" stroke="#140e08" stroke-width="5" stroke-linejoin="round"/>
+                    <path d="M 58 102 C 52 126, 56 146, 64 160 M 72 108 C 69 124, 70 136, 74 146"
+                          stroke="#2b190b" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+                    <path d="M 102 42 C 106 30, 108 20, 106 14 L 126 18 C 122 28, 120 36, 122 45 Z"
+                          fill="#7c471e" stroke="#140e08" stroke-width="4.5" stroke-linejoin="round"/>
+                    <path d="M 36 78 C 34 55, 68 39, 105 42 C 143 44, 170 62, 163 87 C 158 102, 130 98, 98 94 C 65 90, 39 92, 36 78 Z"
+                          fill="url(#acornCap)" stroke="#140e08" stroke-width="5" stroke-linejoin="round"/>
+                    <path d="M 55 68 q 4 8 10 2 M 75 58 q 4 8 10 2 M 98 56 q 4 8 10 2 M 122 60 q 4 8 10 2 M 142 70 q 4 8 8 2
+                             M 65 78 q 4 8 10 2 M 88 74 q 4 8 10 2 M 112 76 q 4 8 10 2 M 134 82 q 4 8 10 2"
+                          stroke="#140e08" stroke-width="3.2" stroke-linecap="round" fill="none"/>
+                </svg>`
+            },
+
+            // --- 2. DIE KASTANIE (Seite 6 & 36) ---
+            kastanie_blatt: {
+                label: "Blatt der Kastanie",
+                svg: `<svg viewBox="0 0 220 200" class="w-full h-full drop-shadow-sm">
+                    <path d="M 34 192 L 96 126" stroke="#6c823b" stroke-width="4.5" stroke-linecap="round"/>
+                    <path d="M 96 126 C 72 124, 48 130, 32 138 C 50 150, 76 146, 96 126 Z" fill="#41631a" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 62 114, 28 96, 12 80 C 40 70, 78 90, 96 126 Z" fill="#496e1e" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 60 90, 38 40, 62 6 C 96 30, 108 82, 96 126 Z" fill="#507822" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 95 74, 118 24, 158 16 C 170 58, 138 104, 96 126 Z" fill="#476c1d" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 128 95, 176 80, 206 102 C 182 136, 138 136, 96 126 Z" fill="#41631a" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 122 132, 146 156, 148 186 C 118 176, 102 152, 96 126 Z" fill="#4a7020" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 C 98 146, 96 170, 86 180 C 75 162, 82 142, 96 126 Z" fill="#3d5e18" stroke="#1e3009" stroke-width="2.8"/>
+                    <path d="M 96 126 L 38 137 M 96 126 L 18 81 M 96 126 L 63 12 M 96 126 L 154 21 M 96 126 L 200 102 M 96 126 L 144 180 M 96 126 L 87 174"
+                          stroke="#78a13d" stroke-width="2.2" stroke-linecap="round"/>
+                    <circle cx="96" cy="126" r="4" fill="#7c2d12"/>
+                </svg>`
+            },
+            kastanie_frucht: {
+                label: "Kastanie in grüner Stachelhülle",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <radialGradient id="chestnutSeed" cx="42%" cy="42%" r="55%">
+                            <stop offset="0%" stop-color="#dfd0c3"/>
+                            <stop offset="18%" stop-color="#7c5233"/>
+                            <stop offset="55%" stop-color="#452712"/>
+                            <stop offset="100%" stop-color="#211004"/>
+                        </radialGradient>
+                        <linearGradient id="spikyHull" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#c7d156"/>
+                            <stop offset="60%" stop-color="#9ca83b"/>
+                            <stop offset="100%" stop-color="#7e8729"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 28 96 L 8 90 L 30 78 L 16 64 L 42 66
+                             C 55 50, 95 45, 115 55
+                             L 138 20 L 142 42 L 158 12 L 155 38 L 176 18 L 166 44 L 195 34 L 176 55 L 205 54 L 182 72 L 214 82 L 182 92 L 206 112 L 176 112 L 195 134 L 165 128 L 174 154 L 148 138 L 152 168 L 130 146 L 128 180 L 112 150
+                             L 96 174 L 88 148 L 68 174 L 68 145 L 44 164 L 52 138 L 22 144 L 40 124 L 10 122 L 32 108 Z"
+                          fill="url(#spikyHull)" stroke="#141409" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 112 58 C 135 28, 162 42, 152 88 C 148 106, 138 112, 128 108
+                             C 122 128, 86 138, 56 128 C 32 118, 34 88, 52 78 Z"
+                          fill="#f5dab0" stroke="#141409" stroke-width="3.8"/>
+                    <path d="M 52 96 C 48 64, 76 50, 105 56 C 132 62, 136 92, 122 110 C 106 126, 56 122, 52 96 Z"
+                          fill="url(#chestnutSeed)" stroke="#140b04" stroke-width="4.8"/>
+                </svg>`
+            },
+
+            // --- 3. DER AHORN (Seite 7 & 40) ---
+            ahorn_blatt: {
+                label: "Blatt des Ahorns",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <path d="M 16 74 L 88 98" stroke="#7c5826" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M 88 98
+                             L 62 74 L 68 65 L 54 58 L 72 48 L 80 30 L 96 34 L 116 12 L 124 28 L 138 20
+                             L 128 48
+                             L 152 32 L 162 38 L 182 26 L 186 38 L 210 42 L 196 60 L 202 72 L 184 82 L 188 92 L 165 98
+                             L 194 114 L 188 126 L 200 138 L 178 152 L 162 154 L 146 144 L 124 134
+                             L 132 156 L 122 166 L 116 184 L 98 172 L 86 174 L 74 156 L 68 136
+                             L 56 144 L 45 130 L 48 112 L 60 98 Z"
+                          fill="#4b7726" stroke="#22380e" stroke-width="3.2" stroke-linejoin="round"/>
+                    <path d="M 88 98 L 118 20 M 88 98 L 200 45 M 88 98 L 184 142 M 88 98 L 112 176 M 88 98 L 50 134"
+                          stroke="#78a646" stroke-width="2.6" stroke-linecap="round"/>
+                </svg>`
+            },
+            ahorn_frucht: {
+                label: "Flügelnuss des Ahorns",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="mapleWing" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#dfe887"/>
+                            <stop offset="55%" stop-color="#b5cc52"/>
+                            <stop offset="100%" stop-color="#84a32e"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 142 74 C 155 48, 162 24, 155 10" stroke="#4a6118" stroke-width="5" stroke-linecap="round" fill="none"/>
+                    <path d="M 138 72
+                             C 120 66, 102 72, 85 84
+                             C 55 102, 20 112, 14 136
+                             C 10 155, 34 160, 58 146
+                             C 84 132, 98 106, 114 92
+                             C 126 88, 138 92, 146 105
+                             C 138 128, 138 156, 158 174
+                             C 176 186, 198 186, 196 168
+                             C 194 142, 184 110, 168 88
+                             C 158 76, 148 74, 138 72 Z"
+                          fill="url(#mapleWing)" stroke="#141c06" stroke-width="4.2" stroke-linejoin="round"/>
+                    <path d="M 105 84 C 118 82, 126 82, 136 76 M 140 78 C 148 86, 154 94, 156 105"
+                          stroke="#26380d" stroke-width="3.2" fill="none"/>
+                    <path d="M 88 98 C 68 112, 48 122, 34 136 M 65 112 L 58 132 M 156 105 C 166 128, 174 148, 182 168 M 166 132 L 152 146"
+                          stroke="#465e18" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                </svg>`
+            },
+
+            // --- 4. DIE BUCHE (Seite 8, 43 & 44) ---
+            buche_blatt: {
+                label: "Blatt der Buche",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="beechGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#486318"/>
+                            <stop offset="50%" stop-color="#354d0f"/>
+                            <stop offset="100%" stop-color="#243608"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 16 174 L 46 146" stroke="#7d6428" stroke-width="4.5" stroke-linecap="round"/>
+                    <path d="M 44 148
+                             C 38 115, 48 72, 78 44
+                             C 108 16, 152 12, 198 22
+                             C 192 68, 184 112, 154 140
+                             C 122 168, 82 164, 44 148 Z"
+                          fill="url(#beechGrad)" stroke="#1b2905" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M 44 148 L 195 23" stroke="#638228" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 68 128 L 48 88 M 92 108 L 72 52 M 118 86 L 104 26 M 146 64 L 142 18 M 170 44 L 172 20
+                             M 75 122 L 116 156 M 102 100 L 152 138 M 130 76 L 176 108 M 158 54 L 188 72"
+                          stroke="#638228" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>`
+            },
+            buche_frucht: {
+                label: "Bucheckern in brauner Stachelhülle",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 10 72 C 22 68, 34 68, 42 64
+                             C 48 40, 72 20, 102 22 L 106 12 L 114 25 L 126 16 L 128 36 C 122 50, 105 56, 86 54
+                             C 108 62, 132 72, 142 88 L 132 96 L 140 108 L 124 110 C 106 106, 88 98, 76 88
+                             C 92 106, 114 128, 126 156 L 110 148 L 102 164 L 94 144 L 82 156 L 78 136
+                             C 58 124, 42 106, 38 82 C 28 82, 16 84, 10 78 Z"
+                          fill="#9e6d3b" stroke="#170f06" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 58 52 C 82 48, 112 62, 128 88 C 108 98, 82 92, 58 52 Z" fill="#4f3317" stroke="#170f06" stroke-width="2.8"/>
+                    <path d="M 52 62 l -5 -7 M 62 72 l -5 -7 M 55 84 l -6 -5 M 68 92 l -5 -6 M 48 96 l -6 -4"
+                          stroke="#170f06" stroke-width="2.8" stroke-linecap="round"/>
+                    <path d="M 146 148 L 162 138 C 172 110, 204 90, 228 104 C 238 118, 228 154, 202 160 C 182 164, 168 154, 162 148 L 148 156 Z"
+                          fill="#784e27" stroke="#170f06" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 162 142 C 182 126, 205 112, 226 106" stroke="#b5895b" stroke-width="3" fill="none"/>
+                </svg>`
+            },
+
+            // --- 5. DIE BIRKE (Seite 9) ---
+            birke_blatt: {
+                label: "Blatt der Birke",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <path d="M 20 180 C 35 158, 48 140, 58 124" stroke="#7a8c30" stroke-width="4" stroke-linecap="round" fill="none"/>
+                    <path d="M 58 124
+                             L 46 98 L 40 96 L 44 84 L 38 78 L 44 68 L 42 58 L 52 54 L 54 44 L 66 44 L 72 34 L 84 36 L 94 26 L 108 28 L 122 18 L 136 22 L 152 14 L 166 16 L 190 6
+                             L 182 28 L 184 42 L 178 54 L 180 68 L 174 80 L 176 94 L 168 106 L 170 118 L 158 126 L 156 138 L 140 140 L 132 148 L 116 144 L 92 134 Z"
+                          fill="#688f26" stroke="#283b09" stroke-width="3.2" stroke-linejoin="round"/>
+                    <path d="M 58 124 L 186 9" stroke="#a3c750" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M 78 106 L 54 56 M 102 85 L 88 36 M 128 62 L 122 22 M 152 40 L 152 16
+                             M 84 100 L 132 144 M 112 76 L 166 116 M 138 52 L 176 80"
+                          stroke="#a3c750" stroke-width="2.2" stroke-linecap="round"/>
+                </svg>`
+            },
+            birke_frucht: {
+                label: "Kätzchen der Birke",
+                svg: `<svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="catkinGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#e0c379"/>
+                            <stop offset="50%" stop-color="#bfa058"/>
+                            <stop offset="100%" stop-color="#947432"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 38 12 L 42 52 L 50 50 L 45 16 Z" fill="#6e4726" stroke="#140d06" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 48 46 C 68 48, 86 78, 112 108 C 136 134, 158 146, 162 158 C 164 168, 150 172, 136 160 C 106 134, 72 95, 45 56 Z"
+                          fill="url(#catkinGrad)" stroke="#140d06" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 38 48 C 24 68, 34 110, 68 144 C 102 176, 146 192, 166 192 C 174 190, 174 176, 158 170 C 122 156, 86 132, 62 98 C 48 76, 46 58, 46 48 Z"
+                          fill="url(#catkinGrad)" stroke="#140d06" stroke-width="3.8" stroke-linejoin="round"/>
+                    <path d="M 40 68 q 6 4 10 -2 M 46 86 q 6 4 10 -2 M 58 106 q 6 4 10 -2 M 75 126 q 6 4 10 -2 M 96 144 q 6 4 10 -2 M 120 162 q 6 4 10 -2 M 144 176 q 6 4 10 -2
+                             M 64 68 q 6 4 10 -2 M 82 90 q 6 4 10 -2 M 102 112 q 6 4 10 -2 M 124 134 q 6 4 10 -2 M 142 150 q 6 4 10 -2"
+                          stroke="#261a0b" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+                </svg>`
+            },
+
+            // --- 6. DIE LINDE (Seite 10 & 52) ---
+            linde_blatt: {
+                label: "Blatt der Linde",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <path d="M 36 184 L 72 136" stroke="#6d872e" stroke-width="4.2" stroke-linecap="round"/>
+                    <path d="M 72 136
+                             C 40 142, 20 116, 26 84
+                             C 32 48, 68 28, 108 22
+                             C 148 16, 178 16, 200 8
+                             C 192 32, 194 68, 186 104
+                             C 178 140, 148 160, 114 152
+                             C 92 148, 78 138, 72 136 Z"
+                          fill="#385915" stroke="#1a2e07" stroke-width="3.5" stroke-linejoin="round"/>
+                    <path d="M 72 136 L 195 11" stroke="#658c35" stroke-width="2.8" stroke-linecap="round"/>
+                    <path d="M 72 136 C 52 114, 45 92, 48 68 M 72 136 C 102 144, 134 142, 162 128
+                             M 98 110 L 68 48 M 126 82 L 106 28 M 154 54 L 146 20
+                             M 105 103 L 174 112 M 135 72 L 184 78"
+                          stroke="#658c35" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                </svg>`
+            },
+            linde_frucht: {
+                label: "Nussfrüchte mit Hochblatt",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <defs>
+                        <linearGradient id="lindenBract" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#cc9666"/>
+                            <stop offset="50%" stop-color="#dfb086"/>
+                            <stop offset="100%" stop-color="#b57d50"/>
+                        </linearGradient>
+                    </defs>
+                    <path d="M 22 12 L 58 36" stroke="#302114" stroke-width="3.8" stroke-linecap="round"/>
+                    <path d="M 55 34
+                             C 78 42, 108 58, 142 66
+                             C 178 75, 208 92, 204 102
+                             C 198 110, 164 104, 130 92
+                             C 96 80, 72 60, 55 34 Z"
+                          fill="url(#lindenBract)" stroke="#1f140a" stroke-width="3.4" stroke-linejoin="round"/>
+                    <path d="M 55 34 L 198 98 M 88 54 L 96 46 M 115 68 L 128 62 M 145 80 L 162 76 M 102 62 L 98 74 M 134 76 L 128 88"
+                          stroke="#4a2e16" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M 96 58 L 134 114 M 134 114 L 180 138 M 134 114 L 166 158"
+                          stroke="#302b20" stroke-width="3.8" stroke-linecap="round" fill="none"/>
+                    <path d="M 176 136 C 186 132, 202 140, 202 154 C 192 158, 176 150, 176 136 Z"
+                          fill="#7c7347" stroke="#1a170e" stroke-width="3.4"/>
+                    <path d="M 162 156 C 174 154, 188 166, 184 182 C 170 182, 158 170, 162 156 Z"
+                          fill="#7c7347" stroke="#1a170e" stroke-width="3.4"/>
+                </svg>`
+            },
+
+            // --- 7. DIE TANNE (Seite 12, 24, 54 & 56) ---
+            tanne_nadeln: {
+                label: "Zweig der Tanne",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 20 16 C 46 58, 86 76, 148 72 C 178 70, 198 76, 216 82
+                             M 38 45 C 52 76, 56 98, 62 120
+                             M 92 72 C 132 92, 168 118, 204 154"
+                          stroke="#9c683e" stroke-width="8.5" stroke-linecap="round" fill="none"/>
+                    <g fill="#4f7a4e" stroke="#122112" stroke-width="2.4">
+                        <ellipse cx="24" cy="46" rx="4.2" ry="18" transform="rotate(20 24 46)"/>
+                        <ellipse cx="34" cy="54" rx="4.2" ry="18" transform="rotate(15 34 54)"/>
+                        <ellipse cx="48" cy="96" rx="4.2" ry="18" transform="rotate(15 48 96)"/>
+                        <ellipse cx="58" cy="108" rx="4.2" ry="18" transform="rotate(5 58 108)"/>
+                        <ellipse cx="70" cy="105" rx="4.2" ry="18" transform="rotate(-18 70 105)"/>
+                        <ellipse cx="82" cy="84" rx="4.2" ry="16" transform="rotate(-25 82 84)"/>
+                        <ellipse cx="102" cy="92" rx="4.2" ry="18" transform="rotate(-15 102 92)"/>
+                        <ellipse cx="118" cy="102" rx="4.2" ry="18" transform="rotate(-10 118 102)"/>
+                        <ellipse cx="132" cy="116" rx="4.2" ry="19" transform="rotate(-5 132 116)"/>
+                        <ellipse cx="148" cy="128" rx="4.2" ry="19" transform="rotate(-8 148 128)"/>
+                        <ellipse cx="164" cy="142" rx="4.2" ry="19" transform="rotate(-12 164 142)"/>
+                        <ellipse cx="180" cy="152" rx="4.2" ry="19" transform="rotate(-18 180 152)"/>
+                        <ellipse cx="198" cy="156" rx="4.2" ry="18" transform="rotate(-35 198 156)"/>
+                        <ellipse cx="136" cy="56" rx="4.2" ry="18" transform="rotate(45 136 56)"/>
+                        <ellipse cx="156" cy="56" rx="4.2" ry="18" transform="rotate(45 156 56)"/>
+                        <ellipse cx="176" cy="58" rx="4.2" ry="18" transform="rotate(48 176 58)"/>
+                        <ellipse cx="196" cy="64" rx="4.2" ry="18" transform="rotate(55 196 64)"/>
+                        <ellipse cx="212" cy="78" rx="4.2" ry="18" transform="rotate(75 212 78)"/>
+                        <ellipse cx="152" cy="88" rx="4.2" ry="18" transform="rotate(-35 152 88)"/>
+                        <ellipse cx="172" cy="92" rx="4.2" ry="18" transform="rotate(-35 172 92)"/>
+                        <ellipse cx="192" cy="96" rx="4.2" ry="18" transform="rotate(-38 192 96)"/>
+                    </g>
+                </svg>`
+            },
+            tanne_unterseite: {
+                label: "Tannennadel-Unterseite (2 weiße Linien)",
+                svg: `<svg viewBox="0 0 220 180" class="w-full h-full drop-shadow-sm">
+                    <!-- Lupen-Kreis für die Nadel-Unterseite -->
+                    <circle cx="110" cy="90" r="76" fill="#eef6ea" stroke="#4a7853" stroke-width="4"/>
+                    <!-- Große flache, abgerundete Tannennadel von unten -->
+                    <path d="M 38 136 C 65 98, 108 62, 168 38 C 182 32, 190 42, 182 54 C 142 96, 98 128, 52 152 Z"
+                          fill="#3e6b42" stroke="#122112" stroke-width="4" stroke-linejoin="round"/>
+                    <!-- Zwei deutliche weiße Linien auf der Unterseite -->
+                    <path d="M 52 138 C 88 106, 128 76, 172 44" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+                    <path d="M 58 144 C 95 114, 135 84, 177 50" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+                </svg>`
+            },
+            tanne_zapfen: {
+                label: "Zapfen der Tanne (wächst nach oben)",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <!-- Zweig unten, auf dem der Zapfen mit der Spitze nach OBEN steht -->
+                    <path d="M 28 168 Q 110 158 192 166" stroke="#7c5330" stroke-width="8" stroke-linecap="round" fill="none"/>
+                    <g transform="translate(75, 10)">
+                        <path d="M 35 0 C 54 4, 64 38, 66 84 C 68 126, 58 152, 35 156 C 12 152, 2 126, 4 84 C 6 38, 16 4, 35 0 Z"
+                              fill="#9e7b56" stroke="#140d06" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 18 22 Q 35 8 52 22 M 12 42 Q 35 26 58 42 M 10 62 Q 35 46 60 62 M 8 82 Q 35 66 62 82 M 8 102 Q 35 86 62 102 M 10 122 Q 35 106 60 122 M 14 140 Q 35 124 56 140
+                                 M 25 32 L 35 20 L 45 32 M 22 52 L 35 38 L 48 52 M 20 72 L 35 58 L 50 72 M 20 92 L 35 78 L 50 92 M 22 112 L 35 98 L 48 112 M 24 130 L 35 116 L 46 130"
+                              stroke="#1f1409" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+                    </g>
+                </svg>`
+            },
+
+            // --- 8. DIE FICHTE (Seite 13, 25, 58, 59 & 60) ---
+            fichte_nadeln: {
+                label: "Zweig der Fichte",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 16 50 L 214 120 M 82 74 L 148 22 M 76 72 L 106 160"
+                          stroke="#9e6336" stroke-width="6" stroke-linecap="round" fill="none"/>
+                    <g stroke="#172617" stroke-width="2" fill="#5e875c" stroke-linejoin="round">
+                        <path d="M 92 66 L 105 36 L 98 62 Z M 106 55 L 122 26 L 112 52 Z M 120 44 L 138 16 L 126 40 Z
+                                 M 96 68 L 126 60 L 104 64 Z M 112 56 L 142 46 L 118 52 Z M 128 42 L 156 32 L 134 38 Z"/>
+                        <path d="M 80 86 L 64 114 L 82 94 Z M 86 105 L 72 135 L 88 112 Z M 92 124 L 80 154 L 96 132 Z
+                                 M 84 86 L 108 112 L 88 94 Z M 90 106 L 114 132 L 94 114 Z M 96 126 L 118 152 L 100 134 Z"/>
+                        <path d="M 32 56 L 54 40 L 40 58 Z M 48 62 L 72 44 L 56 64 Z M 104 82 L 134 64 L 112 84 Z M 126 88 L 158 70 L 134 90 Z M 148 96 L 180 78 L 156 98 Z M 170 104 L 202 86 L 178 106 Z M 190 110 L 224 94 L 198 112 Z
+                                 M 30 58 L 48 80 L 38 60 Z M 48 64 L 66 88 L 56 66 Z M 102 84 L 124 114 L 110 86 Z M 124 92 L 146 122 L 132 94 Z M 146 98 L 168 130 L 154 100 Z M 168 106 L 190 138 L 176 108 Z M 188 112 L 214 142 L 196 114 Z"/>
+                    </g>
+                </svg>`
+            },
+            fichte_zapfen: {
+                label: "Zapfen der Fichte (hängt nach unten)",
+                svg: `<svg viewBox="0 0 220 190" class="w-full h-full drop-shadow-sm">
+                    <!-- Zweig oben, an dem der Fichtenzapfen mit der Spitze nach UNTEN hängt -->
+                    <path d="M 30 16 Q 110 24 190 14" stroke="#7c5330" stroke-width="7" stroke-linecap="round" fill="none"/>
+                    <g transform="translate(75, 20)">
+                        <path d="M 35 0 C 58 2, 66 34, 64 80 C 62 124, 52 154, 35 158 C 18 154, 8 124, 6 80 C 4 34, 12 2, 35 0 Z"
+                              fill="#9c744f" stroke="#140d06" stroke-width="4.5" stroke-linejoin="round"/>
+                        <path d="M 14 20 Q 35 38 56 20 M 10 40 Q 35 58 60 40 M 8 60 Q 35 78 62 60 M 8 80 Q 35 98 62 80 M 10 100 Q 35 118 60 100 M 12 120 Q 35 138 58 120 M 18 138 Q 35 152 52 138
+                                 M 24 28 L 35 44 L 46 28 M 22 48 L 35 64 L 48 48 M 20 68 L 35 84 L 50 68 M 20 88 L 35 104 L 50 88 M 22 108 L 35 124 L 48 108 M 25 126 L 35 142 L 45 126"
+                              stroke="#1f1409" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+                    </g>
+                </svg>`
+            },
+
+            // --- 9. DIE KIEFER (Seite 14, 26, 62 & 63) ---
+            kiefer_nadeln: {
+                label: "Zweig der Kiefer",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 16 72 C 65 92, 124 114, 198 116 M 56 88 L 80 58"
+                          stroke="#8c6239" stroke-width="7.5" stroke-linecap="round" fill="none"/>
+                    <g stroke="#172b17" stroke-width="2.6" fill="none" stroke-linecap="round">
+                        <path d="M 80 58 L 60 8 M 80 58 L 76 6"/>
+                        <path d="M 80 58 L 96 8 M 80 58 L 114 14"/>
+                        <path d="M 80 58 L 128 30 M 80 58 L 134 46"/>
+                        <path d="M 80 58 L 40 20 M 80 58 L 34 38"/>
+                        <path d="M 80 58 L 36 56 M 80 58 L 44 68"/>
+                        <path d="M 72 95 L 64 158 M 72 95 L 82 160"/>
+                        <path d="M 98 104 L 94 166 M 98 104 L 112 168"/>
+                        <path d="M 128 110 L 136 172 M 128 110 L 152 170"/>
+                        <path d="M 156 114 L 172 174 M 156 114 L 188 170"/>
+                        <path d="M 142 112 L 188 76 M 142 112 L 200 88"/>
+                        <path d="M 176 115 L 224 84 M 176 115 L 230 102"/>
+                        <path d="M 186 116 L 232 124 M 186 116 L 226 142"/>
+                    </g>
+                    <ellipse cx="80" cy="56" rx="5.5" ry="9.5" fill="#9c5a2d" stroke="#140d06" stroke-width="2.8"/>
+                </svg>`
+            },
+            kiefer_zapfen: {
+                label: "Zapfen der Kiefer",
+                svg: `<svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-sm">
+                    <g stroke="#140d06" stroke-width="3.6" stroke-linejoin="round">
+                        <circle cx="102" cy="112" r="46" fill="#59331d"/>
+                        <path d="M 86 68 L 72 18 L 88 12 L 98 62 Z" fill="#8f5334"/>
+                        <path d="M 72 18 L 88 12 L 90 24 L 74 28 Z" fill="#cbb69d"/>
+                        <path d="M 102 68 L 116 20 L 132 24 L 116 72 Z" fill="#8f5334"/>
+                        <path d="M 116 20 L 132 24 L 128 36 L 112 32 Z" fill="#cbb69d"/>
+                        <path d="M 118 76 L 154 32 L 166 44 L 132 88 Z" fill="#8f5334"/>
+                        <path d="M 154 32 L 166 44 L 156 54 L 144 42 Z" fill="#cbb69d"/>
+                        <path d="M 128 92 L 178 58 L 186 72 L 138 106 Z" fill="#8f5334"/>
+                        <path d="M 178 58 L 186 72 L 174 80 L 166 66 Z" fill="#cbb69d"/>
+                        <path d="M 132 110 L 188 94 L 192 110 L 136 126 Z" fill="#8f5334"/>
+                        <path d="M 188 94 L 192 110 L 178 114 L 174 98 Z" fill="#cbb69d"/>
+                        <path d="M 74 78 L 36 42 L 48 30 L 86 68 Z" fill="#8f5334"/>
+                        <path d="M 36 42 L 48 30 L 58 40 L 46 52 Z" fill="#cbb69d"/>
+                        <path d="M 66 96 L 20 68 L 28 54 L 76 82 Z" fill="#8f5334"/>
+                        <path d="M 20 68 L 28 54 L 40 62 L 32 76 Z" fill="#cbb69d"/>
+                        <path d="M 64 114 L 12 96 L 16 80 L 68 98 Z" fill="#8f5334"/>
+                        <path d="M 12 96 L 16 80 L 30 86 L 26 102 Z" fill="#cbb69d"/>
+                        <path d="M 68 130 L 16 126 L 18 112 L 70 116 Z" fill="#8f5334"/>
+                        <path d="M 16 126 L 18 112 L 34 114 L 32 128 Z" fill="#cbb69d"/>
+                        <ellipse cx="98" cy="92" rx="18" ry="10" fill="#cbb69d"/>
+                        <ellipse cx="72" cy="116" rx="18" ry="10" fill="#cbb69d"/>
+                        <ellipse cx="128" cy="122" rx="18" ry="10" fill="#cbb69d"/>
+                        <ellipse cx="102" cy="138" rx="20" ry="10" fill="#cbb69d"/>
+                        <ellipse cx="64" cy="148" rx="18" ry="9" fill="#cbb69d"/>
+                        <ellipse cx="136" cy="148" rx="18" ry="9" fill="#cbb69d"/>
+                        <ellipse cx="102" cy="164" rx="22" ry="9" fill="#cbb69d"/>
+                    </g>
+                </svg>`
+            },
+
+            // --- 10. DIE LÄRCHE (Seite 15, 27, 66 & 67) ---
+            laerche_nadeln: {
+                label: "Zweig der Lärche",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 18 28 C 68 65, 134 102, 208 118"
+                          stroke="#8f5e38" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+                    <g fill="#7c4d28" stroke="#1a1007" stroke-width="2.2">
+                        <circle cx="44" cy="46" r="5.5"/>
+                        <circle cx="78" cy="68" r="5.5"/>
+                        <circle cx="110" cy="86" r="5.5"/>
+                        <circle cx="148" cy="102" r="5.5"/>
+                        <circle cx="176" cy="110" r="5.5"/>
+                        <circle cx="206" cy="118" r="4.5"/>
+                    </g>
+                    <g stroke="#243d22" stroke-width="2.2" stroke-linecap="round">
+                        <path d="M 44 46 L 46 8 M 44 46 L 56 10 M 44 46 L 68 16 M 44 46 L 76 26"/>
+                        <path d="M 44 46 L 10 72 M 44 46 L 16 86 M 44 46 L 26 96 M 44 46 L 38 98"/>
+                        <path d="M 78 68 L 88 30 M 78 68 L 100 34 M 78 68 L 110 42"/>
+                        <path d="M 78 68 L 52 112 M 78 68 L 64 120 M 78 68 L 78 122 M 78 68 L 90 118"/>
+                        <path d="M 110 86 L 138 54 M 110 86 L 146 64 M 110 86 L 152 76"/>
+                        <path d="M 110 86 L 96 134 M 110 86 L 108 138 M 110 86 L 122 138"/>
+                        <path d="M 148 102 L 142 154 M 148 102 L 154 158 M 148 102 L 166 152"/>
+                        <path d="M 176 110 L 178 62 M 176 110 L 190 64 M 176 110 L 202 72"/>
+                        <path d="M 176 110 L 182 154 M 176 110 L 194 152"/>
+                        <path d="M 206 118 L 232 104 M 206 118 L 236 116 M 206 118 L 232 128"/>
+                    </g>
+                </svg>`
+            },
+            laerche_herbst: {
+                label: "Lärchenzweig im Herbst (gelb-orange)",
+                svg: `<svg viewBox="0 0 240 180" class="w-full h-full drop-shadow-sm">
+                    <path d="M 18 28 C 68 65, 134 102, 208 118"
+                          stroke="#8f5e38" stroke-width="6.5" stroke-linecap="round" fill="none"/>
+                    <g fill="#7c4d28" stroke="#1a1007" stroke-width="2.2">
+                        <circle cx="44" cy="46" r="5.5"/>
+                        <circle cx="78" cy="68" r="5.5"/>
+                        <circle cx="110" cy="86" r="5.5"/>
+                        <circle cx="148" cy="102" r="5.5"/>
+                        <circle cx="176" cy="110" r="5.5"/>
+                    </g>
+                    <!-- Gelb-orange verfärbte Nadeln im Herbst -->
+                    <g stroke="#d97706" stroke-width="2.5" stroke-linecap="round">
+                        <path d="M 44 46 L 46 8 M 44 46 L 56 10 M 44 46 L 68 16 M 44 46 L 76 26"/>
+                        <path d="M 44 46 L 10 72 M 44 46 L 16 86 M 44 46 L 26 96 M 44 46 L 38 98"/>
+                        <path d="M 78 68 L 88 30 M 78 68 L 100 34 M 78 68 L 110 42"/>
+                        <path d="M 78 68 L 52 112 M 78 68 L 64 120 M 78 68 L 78 122 M 78 68 L 90 118"/>
+                        <path d="M 110 86 L 138 54 M 110 86 L 146 64 M 110 86 L 152 76"/>
+                        <path d="M 110 86 L 96 134 M 110 86 L 108 138 M 110 86 L 122 138"/>
+                        <path d="M 148 102 L 142 154 M 148 102 L 154 158 M 148 102 L 166 152"/>
+                        <path d="M 176 110 L 178 62 M 176 110 L 190 64 M 176 110 L 202 72"/>
+                    </g>
+                    <!-- Einzelne fallende gelb-orange Nadeln -->
+                    <path d="M 42 152 L 62 162 M 96 164 L 118 158 M 182 146 L 202 158" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round"/>
+                </svg>`
+            },
+            laerche_zapfen: {
+                label: "Zapfen der Lärche",
+                svg: `<svg viewBox="0 0 200 200" class="w-full h-full drop-shadow-sm">
+                    <g fill="#b5a38c" stroke="#120e0a" stroke-width="4.2" stroke-linejoin="round">
+                        <path d="M 65 162 C 62 178, 134 178, 136 158 Z"/>
+                        <path d="M 42 138 C 36 158, 86 166, 108 152 C 132 164, 168 152, 162 132 Z"/>
+                        <path d="M 28 106 C 18 128, 62 146, 96 136 C 128 148, 176 136, 174 112 Z"/>
+                        <path d="M 18 82 C 14 106, 68 118, 104 112 C 142 120, 192 102, 186 78 C 176 66, 148 76, 128 92 Z"/>
+                        <path d="M 32 56 C 24 78, 68 94, 105 88 C 142 94, 176 76, 168 54 C 154 44, 132 58, 105 68 C 78 58, 48 44, 32 56 Z"/>
+                        <path d="M 52 34 C 46 54, 78 68, 102 66 C 128 68, 154 52, 148 32 C 134 24, 118 36, 102 44 C 86 36, 66 24, 52 34 Z"/>
+                        <path d="M 74 22 C 74 10, 126 10, 126 22 C 126 38, 74 38, 74 22 Z"/>
+                        <circle cx="98" cy="24" r="6" fill="#9c8a73"/>
+                    </g>
+                </svg>`
+            }
+        };
+
+        function renderIllustration(key, extraClasses = "w-28 h-28") {
+            const item = ILLUSTRATIONS[key];
+            if (!item) return '';
+            return `<div class="${extraClasses} flex items-center justify-center p-1 select-none">${item.svg}</div>`;
+        }
+
+        /********************************************************************
+         * 2. EXAKT DIE 25 SACHBEZOGENEN FRAGEN AUS DEN STECKBRIEFEN
+         ********************************************************************/
+        const QUESTIONS = [
+            // 1. Eiche – Lückentext
+            {
+                id: 1,
+                type: 'cloze',
+                title: 'Die Eiche',
+                images: ['eiche_blatt', 'eiche_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Eiche ist ein großer Laubbaum und wird zwischen 20 und ',
+                    { blank: '40' },
+                    ' Meter hoch. Die Blätter der Eiche sind ',
+                    { blank: 'länglich' },
+                    ' und haben einen ',
+                    { blank: 'gewellten' },
+                    ' Rand.'
+                ],
+                wordBank: ['40', 'länglich', 'gewellten', 'stacheligen', 'rund'],
+                hint: 'Schau dir den welligen Rand des Eichenblattes links genau an!',
+                explanation: 'Die Eiche wird 20 bis 40 Meter hoch und hat längliche Blätter mit einem gewellten Rand.'
+            },
+
+            // 2. Eiche – Offene Frage
+            {
+                id: 2,
+                type: 'open',
+                title: 'Die Früchte der Eiche',
+                images: ['eiche_frucht'],
+                question: 'Wie heißen die kleinen braunen Früchte der Eiche, die eine kleine Kappe haben?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['eicheln', 'eichel', 'die eicheln', 'die eichel'],
+                sampleSolution: 'die Eicheln',
+                hint: 'Der Name der Frucht klingt fast genauso wie der Baum „Eiche“!',
+                explanation: 'Die Früchte der Eiche heißen Eicheln.'
+            },
+
+            // 3. Kastanie – Lückentext
+            {
+                id: 3,
+                type: 'cloze',
+                title: 'Die Kastanie',
+                images: ['kastanie_blatt', 'kastanie_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Blätter der Kastanie sind groß und ',
+                    { blank: 'fingerförmig' },
+                    '. Sie haben fünf bis ',
+                    { blank: 'sieben' },
+                    ' längliche Teilblätter. Ihre Früchte stecken in einer stacheligen ',
+                    { blank: 'grünen' },
+                    ' Hülle.'
+                ],
+                wordBank: ['fingerförmig', 'sieben', 'grünen', 'herzförmig', 'braunen'],
+                hint: 'Zähle die Teilblätter am Blatt und schau auf die Farbe der stacheligen Hülle!',
+                explanation: 'Kastanienblätter sind fingerförmig (5 bis 7 Teilblätter). Die Früchte stecken in einer stacheligen grünen Hülle.'
+            },
+
+            // 4. Bild-Zuordnung (Laubbäume-Blätter 1)
+            {
+                id: 4,
+                type: 'match_pairs',
+                title: 'Blätter der Laubbäume zuordnen (1)',
+                instruction: 'Tippe ein Blatt an und ordne es dem richtigen Baum zu.',
+                targets: [
+                    { id: 'b_eiche', label: '🌳 die Eiche' },
+                    { id: 'b_kastanie', label: '🌰 die Kastanie' },
+                    { id: 'b_ahorn', label: '🍁 der Ahorn' }
+                ],
+                items: [
+                    { id: 'm4_1', img: 'eiche_blatt', name: 'Gewellter Rand', targetId: 'b_eiche' },
+                    { id: 'm4_2', img: 'kastanie_blatt', name: 'Fingerförmig (5–7 Teile)', targetId: 'b_kastanie' },
+                    { id: 'm4_3', img: 'ahorn_blatt', name: 'Handförmig mit Zacken', targetId: 'b_ahorn' }
+                ],
+                hint: 'Eiche = gewellt, Kastanie = 5 bis 7 Finger, Ahorn = Hand mit spitzen Zacken.',
+                explanation: 'Klasse! Du hast Eichenblatt, Kastanienblatt und Ahornblatt richtig zugeordnet.'
+            },
+
+            // 5. Ahorn – Offene Frage
+            {
+                id: 5,
+                type: 'open',
+                title: 'Die Frucht des Ahorns',
+                images: ['ahorn_frucht'],
+                question: 'Wie heißt die Frucht des Ahorns, die wie ein Propeller zu Boden fliegt?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['flügelnuss', 'flügelnüsse', 'die flügelnuss', 'die flügelnüsse', 'fluegelnuss'],
+                sampleSolution: 'die Flügelnuss',
+                hint: 'Das Wort besteht aus „Flügel“ und „Nuss“!',
+                explanation: 'Die Frucht des Ahorns heißt Flügelnuss.'
+            },
+
+            // 6. Ahorn – Lückentext
+            {
+                id: 6,
+                type: 'cloze',
+                title: 'Der Ahorn',
+                images: ['ahorn_blatt', 'ahorn_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Blätter des Ahorns sind ',
+                    { blank: 'handförmig' },
+                    ' und haben viele ',
+                    { blank: 'Zacken' },
+                    '. Jede Frucht enthält ',
+                    { blank: 'zwei' },
+                    ' Samen, an denen jeweils ein Flügel hängt.'
+                ],
+                wordBank: ['handförmig', 'Zacken', 'zwei', 'sieben', 'Kappen'],
+                hint: 'Schau dir die spitzen Zacken am Blatt und die zwei Flügel der Frucht an!',
+                explanation: 'Ahornblätter sind handförmig mit vielen Zacken. Jede Frucht enthält zwei Samen mit je einem Flügel.'
+            },
+
+            // 7. Buche – Lückentext
+            {
+                id: 7,
+                type: 'cloze',
+                title: 'Die Buche',
+                images: ['buche_blatt', 'buche_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Blätter der Buche sind ',
+                    { blank: 'oval' },
+                    ' und laufen oben zu einer ',
+                    { blank: 'Spitze' },
+                    ' zusammen. Ihre Früchte wachsen in einer stacheligen ',
+                    { blank: 'braunen' },
+                    ' Hülle.'
+                ],
+                wordBank: ['oval', 'Spitze', 'braunen', 'grünen', 'Kappe'],
+                hint: 'Vergleiche mit der Kastanie: Bei der Buche ist die stachelige Hülle braun!',
+                explanation: 'Buchenblätter sind oval mit einer Spitze oben. Die Früchte wachsen in einer stacheligen braunen Hülle.'
+            },
+
+            // 8. Buche – Offene Frage
+            {
+                id: 8,
+                type: 'open',
+                title: 'Die Früchte der Buche',
+                images: ['buche_frucht'],
+                question: 'Wie nennt man die Früchte der Buche, die in einer stacheligen braunen Hülle wachsen?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['bucheckern', 'buchecker', 'die bucheckern', 'die buchecker'],
+                sampleSolution: 'die Bucheckern',
+                hint: 'Das Wort fängt mit „Buch...“ an und endet mit „...eckern“!',
+                explanation: 'Die Früchte einer Buche nennt man Bucheckern.'
+            },
+
+            // 9. Bild-Zuordnung (Früchte der Laubbäume 1)
+            {
+                id: 9,
+                type: 'match_pairs',
+                title: 'Früchte der Laubbäume zuordnen (1)',
+                instruction: 'Tippe eine Frucht an und ordne sie dem richtigen Baum zu.',
+                targets: [
+                    { id: 'f_eiche', label: '🌳 die Eiche' },
+                    { id: 'f_kastanie', label: '🌰 die Kastanie' },
+                    { id: 'f_buche', label: '🌳 die Buche' }
+                ],
+                items: [
+                    { id: 'm9_1', img: 'eiche_frucht', name: 'Eichel mit Kappe', targetId: 'f_eiche' },
+                    { id: 'm9_2', img: 'kastanie_frucht', name: 'Grüne Stachelhülle', targetId: 'f_kastanie' },
+                    { id: 'm9_3', img: 'buche_frucht', name: 'Braune Stachelhülle', targetId: 'f_buche' }
+                ],
+                hint: 'Achte auf die kleine Kappe (Eiche), die grüne Hülle (Kastanie) und die braune Hülle (Buche).',
+                explanation: 'Super! Eichel, Kastanie und Bucheckern sind richtig zugeordnet.'
+            },
+
+            // 10. Birke – Lückentext
+            {
+                id: 10,
+                type: 'cloze',
+                title: 'Die Birke',
+                images: ['birke_blatt', 'birke_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Blätter der Birke sind ',
+                    { blank: 'klein' },
+                    ' und oval. Sie laufen oben spitz zusammen und haben viele kleine ',
+                    { blank: 'Zacken' },
+                    ' am Rand. Ihre länglichen Früchte sehen aus wie ',
+                    { blank: 'Raupen' },
+                    '.'
+                ],
+                wordBank: ['klein', 'Zacken', 'Raupen', 'groß', 'Propeller'],
+                hint: 'An welches kleine Krabbeltier erinnern die länglichen Früchte der Birke?',
+                explanation: 'Birkenblätter sind klein und gezackt. Die länglichen Früchte sehen aus wie Raupen.'
+            },
+
+            // 11. Birke – Offene Frage
+            {
+                id: 11,
+                type: 'open',
+                title: 'Die Früchte der Birke',
+                images: ['birke_frucht'],
+                question: 'Wie heißen die länglichen Früchte der Birke, die wie Raupen aussehen?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['kätzchen', 'kaetzchen', 'die kätzchen', 'birkenkätzchen', 'katzchen'],
+                sampleSolution: 'die Kätzchen',
+                hint: 'Sie heißen genauso wie eine verniedlichte kleine Katze!',
+                explanation: 'Die länglichen Früchte der Birke heißen Kätzchen.'
+            },
+
+            // 12. Linde – Lückentext
+            {
+                id: 12,
+                type: 'cloze',
+                title: 'Die Linde',
+                images: ['linde_blatt', 'linde_frucht'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Blätter der Linde sind etwa so groß wie eine ',
+                    { blank: 'Handfläche' },
+                    '. An ihren kleinen Nussfrüchten wächst ein längliches ',
+                    { blank: 'Hochblatt' },
+                    ', das als eine Art ',
+                    { blank: 'Segel' },
+                    ' zum Fliegen dient.'
+                ],
+                wordBank: ['Handfläche', 'Hochblatt', 'Segel', 'Kappe', 'Stachelhülle'],
+                hint: 'Mit dem länglichen Blatt können die Nussfrüchte weit durch die Luft segeln!',
+                explanation: 'Lindenblätter sind so groß wie eine Handfläche. Das Hochblatt dient den Nussfrüchten als Segel.'
+            },
+
+            // 13. Linde – Offene Frage
+            {
+                id: 13,
+                type: 'open',
+                title: 'Die Blattform der Linde',
+                images: ['linde_blatt'],
+                question: 'Welche besondere Form haben die Blätter der Linde?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['herzförmig', 'herzfoermig', 'herzform', 'wie ein herz', 'herz', 'sie sind herzförmig'],
+                sampleSolution: 'herzförmig (wie ein Herz)',
+                hint: 'Schau dir das grüne Lindenblatt links an: Es sieht aus wie ein ... 💚!',
+                explanation: 'Die Blätter der Linde haben eine besondere Form: Sie sind herzförmig.'
+            },
+
+            // 14. Bild-Zuordnung (Laubbäume-Blätter 2)
+            {
+                id: 14,
+                type: 'match_pairs',
+                title: 'Blätter der Laubbäume zuordnen (2)',
+                instruction: 'Tippe ein Blatt an und ordne es dem richtigen Baum zu.',
+                targets: [
+                    { id: 'b_buche', label: '🌳 die Buche' },
+                    { id: 'b_birke', label: '🌿 die Birke' },
+                    { id: 'b_linde', label: '💚 die Linde' }
+                ],
+                items: [
+                    { id: 'm14_1', img: 'buche_blatt', name: 'Oval mit Spitze (ohne Zacken)', targetId: 'b_buche' },
+                    { id: 'm14_2', img: 'birke_blatt', name: 'Klein, oval & gezackt', targetId: 'b_birke' },
+                    { id: 'm14_3', img: 'linde_blatt', name: 'Herzförmig & gezackt', targetId: 'b_linde' }
+                ],
+                hint: 'Das Buchenblatt hat keine Zacken, das Birkenblatt ist klein und gezackt, das Lindenblatt herzförmig.',
+                explanation: 'Perfekt! Du hast Buchenblatt, Birkenblatt und Lindenblatt richtig zugeordnet.'
+            },
+
+            // 15. Bild-Zuordnung (Früchte der Laubbäume 2)
+            {
+                id: 15,
+                type: 'match_pairs',
+                title: 'Früchte der Laubbäume zuordnen (2)',
+                instruction: 'Tippe eine Frucht an und ordne sie dem richtigen Baum zu.',
+                targets: [
+                    { id: 'f_ahorn', label: '🍁 der Ahorn' },
+                    { id: 'f_birke', label: '🌿 die Birke' },
+                    { id: 'f_linde', label: '💚 die Linde' }
+                ],
+                items: [
+                    { id: 'm15_1', img: 'ahorn_frucht', name: 'Flügelnuss (Propeller)', targetId: 'f_ahorn' },
+                    { id: 'm15_2', img: 'birke_frucht', name: 'Längliche Kätzchen', targetId: 'f_birke' },
+                    { id: 'm15_3', img: 'linde_frucht', name: 'Nussfrüchte mit Hochblatt', targetId: 'f_linde' }
+                ],
+                hint: 'Propeller = Ahorn, Raupen-Kätzchen = Birke, Flugsegel-Hochblatt = Linde.',
+                explanation: 'Toll! Alle drei Früchte sind beim richtigen Laubbaum gelandet.'
+            },
+
+            // 16. Tanne – Lückentext
+            {
+                id: 16,
+                type: 'cloze',
+                title: 'Die Tanne',
+                images: ['tanne_nadeln', 'tanne_unterseite'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Tanne hat ',
+                    { blank: 'weiche' },
+                    ' und biegsame Nadeln, die beim Anfassen nicht wehtun. Wenn du die Nadeln umdrehst, siehst du zwei ',
+                    { blank: 'weiße' },
+                    ' ',
+                    { blank: 'Linien' },
+                    ' auf der Unterseite.'
+                ],
+                wordBank: ['weiche', 'weiße', 'Linien', 'spitze', 'Punkte'],
+                hint: 'Schau auf das Lupen-Bild links: Was leuchtet auf der Unterseite der Tannennadel?',
+                explanation: 'Die Tanne hat weiche Nadeln mit zwei weißen Linien auf der Unterseite.'
+            },
+
+            // 17. Fichte – Lückentext
+            {
+                id: 17,
+                type: 'cloze',
+                title: 'Die Fichte',
+                images: ['fichte_nadeln', 'fichte_zapfen'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Fichte hat harte und ',
+                    { blank: 'spitze' },
+                    ' Nadeln. Wenn du sie anfasst, ',
+                    { blank: 'pieksen' },
+                    ' sie. Die Zapfen der Fichte wachsen mit der Spitze nach ',
+                    { blank: 'unten' },
+                    '.'
+                ],
+                wordBank: ['spitze', 'pieksen', 'unten', 'weiche', 'oben'],
+                hint: 'Merksatz: „Die Fichte sticht, die Tanne nicht!“ Und ihre Zapfen hängen herab.',
+                explanation: 'Die Fichte hat harte, spitze Nadeln, die pieksen. Ihre Zapfen hängen mit der Spitze nach unten.'
+            },
+
+            // 18. Tanne vs. Fichte – Bild-/Eigenschafts-Zuordnung
+            {
+                id: 18,
+                type: 'match_pairs',
+                title: 'Zapfen von Tanne und Fichte unterscheiden',
+                instruction: 'Tippe ein Bild an und ordne es dem passenden Merkmal zu.',
+                targets: [
+                    { id: 'zf_tanne', label: '🌲 Tanne: steht nach oben & fällt nicht ab' },
+                    { id: 'zf_fichte', label: '🌲 Fichte: hängt nach unten & liegt am Boden' }
+                ],
+                items: [
+                    { id: 'm18_1', img: 'tanne_zapfen', name: 'Spitze zeigt nach oben', targetId: 'zf_tanne' },
+                    { id: 'm18_2', img: 'fichte_zapfen', name: 'Spitze zeigt nach unten', targetId: 'zf_fichte' }
+                ],
+                hint: 'Tannenzapfen stehen aufrecht auf dem Ast, Fichtenzapfen hängen nach unten!',
+                explanation: 'Richtig! Tannenzapfen wachsen nach oben (fallen nicht ab), Fichtenzapfen hängen nach unten.'
+            },
+
+            // 19. Offene Frage (Tanne & Fichte)
+            {
+                id: 19,
+                type: 'open',
+                title: 'Zapfen auf dem Waldboden sammeln',
+                images: ['fichte_zapfen', 'tanne_zapfen'],
+                question: 'Welcher Nadelbaum wirft seine ganzen Zapfen ab, sodass du sie im Wald auf dem Boden finden und sammeln kannst?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['fichte', 'die fichte', 'von der fichte'],
+                sampleSolution: 'die Fichte',
+                hint: 'Die Tanne wirft ihre Zapfen nicht ab – also stammen die Zapfen am Waldboden von der ...?',
+                explanation: 'Die Fichte wirft ihre Zapfen ab. Deshalb kannst du sie im Wald auf dem Boden sammeln.'
+            },
+
+            // 20. Kiefer – Lückentext
+            {
+                id: 20,
+                type: 'cloze',
+                title: 'Die Kiefer',
+                images: ['kiefer_nadeln', 'kiefer_zapfen'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Nadeln der Kiefer sind ',
+                    { blank: 'lang' },
+                    '. Sie wachsen immer zu ',
+                    { blank: 'zweit' },
+                    ' an den Zweigen. Ihre Samen werden vom ',
+                    { blank: 'Wind' },
+                    ' verbreitet.'
+                ],
+                wordBank: ['lang', 'zweit', 'Wind', 'kurz', 'Wasser'],
+                hint: 'Schau genau auf den Kiefernzweig: Wie viele lange Nadeln wachsen immer zusammen?',
+                explanation: 'Die Kiefer hat lange Nadeln, die zu zweit wachsen. Der Wind verbreitet ihre Samen.'
+            },
+
+            // 21. Kiefer – Lückentext zum Wetter-Rätsel
+            {
+                id: 21,
+                type: 'cloze',
+                title: 'Das Wetter-Geheimnis der Kiefernzapfen',
+                images: ['kiefer_zapfen'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'An den Zweigen der Kiefer wachsen kleine Zapfen. Wenn es regnet, dann ',
+                    { blank: 'schließen' },
+                    ' sich die Zapfen. Wenn es ',
+                    { blank: 'trocken' },
+                    ' ist, dann ',
+                    { blank: 'öffnen' },
+                    ' sich die Zapfen.'
+                ],
+                wordBank: ['schließen', 'trocken', 'öffnen', 'färben', 'nass'],
+                hint: 'Bei Regen schützen die Zapfen ihre Samen, bei trockenem Wetter lassen sie die Samen fliegen!',
+                explanation: 'Bei Regen schließen sich die Kiefernzapfen, bei Trockenheit öffnen sie sich.'
+            },
+
+            // 22. Bild-Zuordnung (Nadelzweige erkennen)
+            {
+                id: 22,
+                type: 'match_pairs',
+                title: 'Nadelzweige der Bäume erkennen',
+                instruction: 'Tippe einen Zweig an und ordne ihn dem richtigen Nadelbaum zu.',
+                targets: [
+                    { id: 'nz_kiefer', label: '🌲 die Kiefer' },
+                    { id: 'nz_laerche', label: '🍂 die Lärche' },
+                    { id: 'nz_tanne', label: '🌲 die Tanne' }
+                ],
+                items: [
+                    { id: 'm22_1', img: 'kiefer_nadeln', name: 'Lange Nadeln zu zweit', targetId: 'nz_kiefer' },
+                    { id: 'm22_2', img: 'laerche_nadeln', name: 'Weiche Nadelbüschel', targetId: 'nz_laerche' },
+                    { id: 'm22_3', img: 'tanne_nadeln', name: 'Weiche flache Nadeln', targetId: 'nz_tanne' }
+                ],
+                hint: 'Kiefer = lange Nadelpaare, Lärche = kleine Pinsel-Büschel, Tanne = dichte flache Nadeln.',
+                explanation: 'Super! Du hast Kiefernzweig, Lärchenzweig und Tannenzweig richtig zugeordnet.'
+            },
+
+            // 23. Lärche – Lückentext
+            {
+                id: 23,
+                type: 'cloze',
+                title: 'Die Lärche',
+                images: ['laerche_herbst', 'laerche_zapfen'],
+                instruction: 'Tippe auf ein Wort, um die Lücke zu füllen.',
+                segments: [
+                    'Die Nadeln der Lärche sind ganz ',
+                    { blank: 'weich' },
+                    ' und pieksen nicht. Die kleinen hellbraunen Zapfen wachsen nach ',
+                    { blank: 'oben' },
+                    '. Im Herbst verfärben sich ihre Nadeln ',
+                    { blank: 'gelb-orange' },
+                    '.'
+                ],
+                wordBank: ['weich', 'oben', 'gelb-orange', 'spitz', 'unten'],
+                hint: 'Schau dir die leuchtende Herbstfarbe der Lärchennadeln links an!',
+                explanation: 'Die Lärche hat weiche Nadeln, kleine nach oben wachsende Zapfen und färbt sich im Herbst gelb-orange.'
+            },
+
+            // 24. Lärche – Offene Frage
+            {
+                id: 24,
+                type: 'open',
+                title: 'Der besondere Nadelbaum im Herbst',
+                images: ['laerche_herbst'],
+                question: 'Welcher ist der einzige Nadelbaum, der im Herbst seine Nadeln abwirft?',
+                instruction: 'Schreibe deine Antwort in die Zeile.',
+                placeholder: 'Hier tippen...',
+                acceptedAnswers: ['lärche', 'die lärche', 'laerche', 'die laerche'],
+                sampleSolution: 'die Lärche',
+                hint: 'Achte beim Schreiben auf das „ä“ im Namen dieses besonderen Nadelbaums!',
+                explanation: 'Die Lärche ist der einzige heimische Nadelbaum, der im Herbst seine Nadeln abwirft.'
+            },
+
+            // 25. Bild-Zuordnung (Zapfen-Meisterrunde)
+            {
+                id: 25,
+                type: 'match_pairs',
+                title: 'Zapfen-Meisterrunde',
+                instruction: 'Tippe einen Zapfen an und ordne ihn dem richtigen Nadelbaum zu.',
+                targets: [
+                    { id: 'zp_kiefer', label: '🌲 die Kiefer' },
+                    { id: 'zp_laerche', label: '🍂 die Lärche' },
+                    { id: 'zp_fichte', label: '🌲 die Fichte' }
+                ],
+                items: [
+                    { id: 'm25_1', img: 'kiefer_zapfen', name: 'Rundlich mit dicken Schuppen', targetId: 'zp_kiefer' },
+                    { id: 'm25_2', img: 'laerche_zapfen', name: 'Klein, hellbraun & rosenförmig', targetId: 'zp_laerche' },
+                    { id: 'm25_3', img: 'fichte_zapfen', name: 'Länglich & nach unten hängend', targetId: 'zp_fichte' }
+                ],
+                hint: 'Kiefer = breit geöffnete Schuppen, Lärche = kleine helle Rose, Fichte = länglich hängend.',
+                explanation: 'Meisterhaft! Du hast auch die letzte Aufgabe richtig gelöst!'
+            }
+        ];
+
+        /********************************************************************
+         * 3. QUIZ-STATE, SOUND & STARTFOLIE IM QUERFORMAT (16:10)
+         ********************************************************************/
+        let currentQuestionIndex = 0;
+        let userResults = new Array(QUESTIONS.length).fill(null);
+        let currentAnswered = false;
+
+        let clozeState = [];
+        let selectedWordChip = null;
+        let matchState = {};
+        let selectedMatchItem = null;
+
+        function playSound(type) {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const now = ctx.currentTime;
+                if (type === 'correct') {
+                    [523.25, 659.25, 783.99].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.12, now + i * 0.08);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.08);
+                        osc.stop(now + i * 0.08 + 0.27);
+                    });
+                } else if (type === 'wrong') {
+                    [310, 260].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.12, now + i * 0.13);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.13 + 0.24);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.13);
+                        osc.stop(now + i * 0.13 + 0.25);
+                    });
+                } else if (type === 'pop') {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = 460;
+                    gain.gain.setValueAtTime(0.06, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                } else if (type === 'fanfare') {
+                    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.value = freq;
+                        gain.gain.setValueAtTime(0.14, now + i * 0.11);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.11 + 0.42);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start(now + i * 0.11);
+                        osc.stop(now + i * 0.11 + 0.45);
+                    });
+                }
+            } catch (e) {}
+        }
+
+        // STARTFOLIE IM ZWEISPALTIGEN QUERFORMAT
+        function showStartSlide() {
+            stopConfetti();
+            const card = document.getElementById('quiz-card');
+            card.innerHTML = `
+                <div class="animate-pop h-full grid grid-cols-12 gap-6 items-center">
+                    
+                    <!-- LINKE SPALTE: Titel & die 4 Original-Titelillustrationen -->
+                    <div class="col-span-5 bg-[#f1f6ec] border-3 border-[#8ab075] rounded-3xl p-5 h-full flex flex-col justify-between text-center shadow-inner">
+                        <div>
+                            <span class="inline-block bg-[#4a7853] text-white text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full mb-2">
+                                HSU Klasse 3 • Bäume des Waldes
+                            </span>
+                            <h1 class="school-title text-3xl lg:text-4xl font-extrabold text-[#1f3a24] leading-tight">
+                                Welche Bäume wachsen im Wald?
+                            </h1>
+                        </div>
+
+                        <!-- 2x2 Raster mit Eichel, Ahornblatt, Kastanie in Stachelhülle, Kiefernzapfen mit Zweig -->
+                        <div class="grid grid-cols-2 gap-3 my-auto py-2">
+                            <div class="bg-white border-2 border-[#7fa668] rounded-2xl p-2 flex flex-col items-center shadow-sm">
+                                ${renderIllustration('eiche_frucht', 'w-20 h-20 lg:w-24 lg:h-24')}
+                                <span class="text-xs font-extrabold text-[#2c4c32]">Eichel</span>
+                            </div>
+                            <div class="bg-white border-2 border-[#7fa668] rounded-2xl p-2 flex flex-col items-center shadow-sm">
+                                ${renderIllustration('ahorn_blatt', 'w-20 h-20 lg:w-24 lg:h-24')}
+                                <span class="text-xs font-extrabold text-[#2c4c32]">Ahornblatt</span>
+                            </div>
+                            <div class="bg-white border-2 border-[#7fa668] rounded-2xl p-2 flex flex-col items-center shadow-sm">
+                                ${renderIllustration('kastanie_frucht', 'w-20 h-20 lg:w-24 lg:h-24')}
+                                <span class="text-xs font-extrabold text-[#2c4c32]">Kastanie</span>
+                            </div>
+                            <div class="bg-white border-2 border-[#7fa668] rounded-2xl p-2 flex flex-col items-center shadow-sm">
+                                ${renderIllustration('kiefer_kombi', 'w-20 h-20 lg:w-24 lg:h-24')}
+                                <span class="text-xs font-extrabold text-[#2c4c32]">Kiefernzweig</span>
+                            </div>
+                        </div>
+
+                        <p class="text-sm font-bold text-[#4a7853]">
+                            Teste dein Wissen zu allen 10 Laubbäumen und Nadelbäumen!
+                        </p>
+                    </div>
+
+                    <!-- RECHTE SPALTE: Kurze Erklärung & Start-Button -->
+                    <div class="col-span-7 flex flex-col justify-between h-full py-1">
+                        <div>
+                            <h2 class="school-title text-2xl lg:text-3xl font-extrabold text-[#1f3a24] mb-3">
+                                So geht das Quiz:
+                            </h2>
+
+                            <div class="space-y-2.5">
+                                <div class="flex items-center gap-3.5 bg-[#f4f8f0] p-3 rounded-2xl border-2 border-[#b5cfa4]">
+                                    <span class="text-3xl shrink-0">🧩</span>
+                                    <p class="text-base lg:text-lg font-bold text-gray-800 leading-snug">
+                                        <span class="text-[#2c4c32] font-extrabold">1. Lückentexte:</span> Tippe ein Wort an oder ziehe es in die Lücke.
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-3.5 bg-[#f4f8f0] p-3 rounded-2xl border-2 border-[#b5cfa4]">
+                                    <span class="text-3xl shrink-0">🖼️</span>
+                                    <p class="text-base lg:text-lg font-bold text-gray-800 leading-snug">
+                                        <span class="text-[#2c4c32] font-extrabold">2. Bilder zuordnen:</span> Tippe ein Bild an und danach den passenden Baum-Kasten.
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-3.5 bg-[#f4f8f0] p-3 rounded-2xl border-2 border-[#b5cfa4]">
+                                    <span class="text-3xl shrink-0">✏️</span>
+                                    <p class="text-base lg:text-lg font-bold text-gray-800 leading-snug">
+                                        <span class="text-[#2c4c32] font-extrabold">3. Selbst schreiben:</span> Tippe in die Schreibzeile und schreibe deine Antwort mit der Tastatur.
+                                    </p>
+                                </div>
+
+                                <div class="flex items-center gap-3.5 bg-amber-50 p-3 rounded-2xl border-2 border-amber-300">
+                                    <span class="text-3xl shrink-0">🦉</span>
+                                    <p class="text-base lg:text-lg font-bold text-amber-950 leading-snug">
+                                        <span class="font-extrabold">Tipp vom Waldkauz:</span> Brauchst du Hilfe? Tippe unten links auf den Waldkauz!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-3 flex justify-end">
+                            <button onclick="startQuiz()" 
+                                    class="w-full sm:w-auto px-10 py-4 rounded-2xl font-extrabold text-2xl bg-[#4a7853] active:bg-[#3a6142] text-white shadow-[0_6px_0_#26422b] active:translate-y-0.5 transition flex items-center justify-center gap-3">
+                                <span>Los geht's!</span>
+                                <span>▶</span>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        function startQuiz() {
+            playSound('pop');
+            userResults = new Array(QUESTIONS.length).fill(null);
+            loadQuestionPage(0);
+        }
+
+        /********************************************************************
+         * 4. SEITEN-RENDERING FÜR QUERFORMAT (OHNE SCROLLEN)
+         ********************************************************************/
+        function loadQuestionPage(index) {
+            stopConfetti();
+            currentQuestionIndex = index;
+            currentAnswered = false;
+            selectedWordChip = null;
+            selectedMatchItem = null;
+
+            const q = QUESTIONS[index];
+
+            if (q.type === 'cloze') {
+                const blankCount = q.segments.filter(s => typeof s === 'object' && s.blank).length;
+                clozeState = new Array(blankCount).fill(null);
+            } else if (q.type === 'match_pairs') {
+                matchState = {};
+                q.targets.forEach(t => matchState[t.id] = []);
+                // Erstes Bild direkt vorwählen für noch schnelleres Tippen am Tablet
+                if (q.items.length > 0) {
+                    selectedMatchItem = q.items[0].id;
+                }
+            }
+
+            renderCurrentQuestionCard();
+        }
+
+        function renderCurrentQuestionCard() {
+            const q = QUESTIONS[currentQuestionIndex];
+            const card = document.getElementById('quiz-card');
+
+            let mainContentHtml = '';
+            if (q.type === 'cloze') {
+                mainContentHtml = buildClozeLandscapeHtml(q);
+            } else if (q.type === 'open') {
+                mainContentHtml = buildOpenLandscapeHtml(q);
+            } else if (q.type === 'match_pairs') {
+                mainContentHtml = buildMatchLandscapeHtml(q);
+            }
+
+            card.innerHTML = `
+                <div class="animate-pop flex flex-col justify-between h-full">
+                    
+                    <!-- KOPFBEREICH DER FRAGE (kompakt) -->
+                    <div class="shrink-0 flex items-baseline justify-between gap-4 border-b-2 border-[#e4ecd8] pb-2">
+                        <h2 class="school-title text-2xl lg:text-3xl font-extrabold text-[#1f3a24]">
+                            ${q.title}
+                        </h2>
+                        <p class="text-base lg:text-lg font-extrabold text-[#4a7853] shrink-0">
+                            👉 ${q.instruction}
+                        </p>
+                    </div>
+
+                    <!-- HAUPTBEREICH (nutzt den Platz im 16:10 Querformat) -->
+                    <div id="interactive-area" class="flex-1 min-h-0 my-3 flex flex-col justify-center">
+                        ${mainContentHtml}
+                    </div>
+
+                    <!-- FESTE AKTIONSLEISTE UNTEN: Links Waldkauz-Tipp, Mitte Status/Feedback, Rechts Prüfen/Weiter -->
+                    <div class="shrink-0 pt-2.5 border-t-2 border-[#e4ecd8] flex items-center justify-between gap-3 min-h-[68px]">
+                        
+                        <!-- Links: Tipp vom Waldkauz -->
+                        <button onclick="toggleHint()" 
+                                class="shrink-0 inline-flex items-center gap-2 bg-amber-100 active:bg-amber-200 text-amber-950 font-extrabold text-base px-4 py-3 rounded-2xl border-2 border-amber-400 shadow-[0_3px_0_#d97706] active:translate-y-0.5 transition">
+                            <span class="text-2xl">🦉</span>
+                            <span>Tipp vom Waldkauz</span>
+                        </button>
+
+                        <!-- Mitte: Platz für Waldkauz-Sprechblase ODER Antwort-Feedback (verhindert jegliches Scrollen!) -->
+                        <div id="bottom-status-area" class="flex-1 min-w-0">
+                            <div id="hint-box" class="hidden bg-amber-50 border-2 border-amber-400 rounded-2xl px-4 py-2 text-amber-950 font-bold text-sm lg:text-base flex items-center gap-2.5 shadow-sm">
+                                <span class="text-xl shrink-0">💡</span>
+                                <span class="leading-snug">${q.hint}</span>
+                            </div>
+                            <div id="feedback-box" class="hidden rounded-2xl px-4 py-2 border-2 text-sm lg:text-base"></div>
+                        </div>
+
+                        <!-- Rechts: Prüfen / Weiter Button -->
+                        <div class="shrink-0">
+                            <button id="check-btn" onclick="checkCurrentAnswer()" 
+                                    class="px-7 py-3 rounded-2xl font-extrabold text-lg lg:text-xl bg-[#4a7853] active:bg-[#3a6142] text-white shadow-[0_5px_0_#26422b] active:translate-y-0.5 transition flex items-center gap-2">
+                                <span>Prüfen</span>
+                                <span>✔</span>
+                            </button>
+
+                            <button id="next-btn" onclick="nextQuestion()" 
+                                    class="hidden px-7 py-3 rounded-2xl font-extrabold text-lg lg:text-xl bg-amber-500 active:bg-amber-600 text-white shadow-[0_5px_0_#b45309] active:translate-y-0.5 transition flex items-center gap-2">
+                                <span>${currentQuestionIndex === QUESTIONS.length - 1 ? 'Ergebnis 🏆' : 'Weiter ➔'}</span>
+                            </button>
+                        </div>
+
+                    </div>
+
+                </div>
+            `;
+
+            if (q.type === 'open') {
+                const input = document.getElementById('open-answer-input');
+                if (input) {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' && !currentAnswered) {
+                            checkCurrentAnswer();
+                        } else if (e.key === 'Enter' && currentAnswered) {
+                            nextQuestion();
+                        }
+                    });
+                }
+            }
+        }
+
+        function toggleHint() {
+            playSound('pop');
+            const hintBox = document.getElementById('hint-box');
+            const feedbackBox = document.getElementById('feedback-box');
+            if (!hintBox) return;
+            if (feedbackBox && !feedbackBox.classList.contains('hidden') && currentAnswered) {
+                // Wenn bereits geantwortet wurde, schalte kurz zwischen Tipp und Erklärung um
+                hintBox.classList.toggle('hidden');
+                feedbackBox.classList.toggle('hidden');
+            } else {
+                hintBox.classList.toggle('hidden');
+            }
+        }
+
+        // Hilfsfunktion: Linke Illustrations-Spalte für Lückentexte & offene Fragen
+        function buildLeftIllustrationPanel(images) {
+            const count = (images || []).length;
+            const sizeClass = count > 1 ? "w-32 h-32 lg:w-40 lg:h-40" : "w-44 h-44 lg:w-52 lg:h-52";
+            return `
+                <div class="col-span-5 bg-[#f1f6ec] border-3 border-[#b5cfa4] rounded-3xl p-4 h-full flex flex-wrap items-center justify-center gap-4 shadow-inner">
+                    ${(images || []).map(imgKey => `
+                        <div class="bg-white border-2 border-[#7fa668] rounded-2xl p-3 shadow-sm flex flex-col items-center">
+                            ${renderIllustration(imgKey, sizeClass)}
+                            <span class="text-xs font-extrabold text-[#2c4c32] mt-1">${ILLUSTRATIONS[imgKey]?.label || ''}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        /********************************************************************
+         * 5. AUFGABENTYP A: LÜCKENTEXTE IM QUERFORMAT (2-SPALTIG)
+         ********************************************************************/
+        function buildClozeLandscapeHtml(q) {
+            let blankIdx = 0;
+            const sentenceHtml = q.segments.map(seg => {
+                if (typeof seg === 'string') {
+                    return `<span>${seg}</span>`;
+                } else {
+                    const idx = blankIdx++;
+                    const currentWord = clozeState[idx];
+                    return `<span id="cloze-slot-${idx}" 
+                                  class="cloze-slot ${currentWord ? 'filled' : ''}"
+                                  ondragover="onClozeDragOver(event, ${idx})"
+                                  ondragleave="onClozeDragLeave(event, ${idx})"
+                                  ondrop="onClozeDrop(event, ${idx})"
+                                  onclick="onClozeSlotClick(${idx})">
+                                ${currentWord ? currentWord : '<span class="text-gray-400 text-base font-bold">?</span>'}
+                            </span>`;
+                }
+            }).join('');
+
+            const chipsHtml = q.wordBank.map((word, wIdx) => {
+                const isUsed = clozeState.includes(word);
+                const isSelected = selectedWordChip === word;
+                return `<div id="word-chip-${wIdx}"
+                             draggable="${!isUsed && !currentAnswered}"
+                             ondragstart="onWordDragStart(event, '${word}')"
+                             onclick="onWordChipClick('${word}')"
+                             class="word-chip ${isUsed ? 'used-chip' : ''} ${isSelected ? 'selected-chip' : ''}">
+                            <span>${word}</span>
+                        </div>`;
+            }).join('');
+
+            return `
+                <div class="grid grid-cols-12 gap-6 items-center h-full">
+                    ${buildLeftIllustrationPanel(q.images)}
+
+                    <div class="col-span-7 flex flex-col justify-center gap-4 h-full">
+                        <div class="bg-[#f8faf5] border-3 border-[#8ab075] rounded-3xl p-5 text-xl lg:text-2xl leading-relaxed font-bold text-[#1f2937] shadow-inner">
+                            ${sentenceHtml}
+                        </div>
+
+                        <div class="flex flex-wrap justify-center gap-3 p-4 bg-[#edf4e6] border-2 border-[#b5cfa4] rounded-3xl min-h-[82px] items-center">
+                            ${chipsHtml}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function onWordDragStart(e, word) {
+            if (currentAnswered) return;
+            e.dataTransfer.setData('text/plain', word);
+            selectedWordChip = word;
+        }
+
+        function onClozeDragOver(e, slotIdx) {
+            if (currentAnswered) return;
+            e.preventDefault();
+            document.getElementById(`cloze-slot-${slotIdx}`)?.classList.add('drag-over');
+        }
+
+        function onClozeDragLeave(e, slotIdx) {
+            document.getElementById(`cloze-slot-${slotIdx}`)?.classList.remove('drag-over');
+        }
+
+        function onClozeDrop(e, slotIdx) {
+            if (currentAnswered) return;
+            e.preventDefault();
+            document.getElementById(`cloze-slot-${slotIdx}`)?.classList.remove('drag-over');
+            const word = e.dataTransfer.getData('text/plain') || selectedWordChip;
+            if (word) placeWordInCloze(slotIdx, word);
+        }
+
+        function onWordChipClick(word) {
+            if (currentAnswered) return;
+            const firstEmptyIdx = clozeState.findIndex(val => val === null);
+            if (selectedWordChip === word) {
+                selectedWordChip = null;
+                playSound('pop');
+            } else if (firstEmptyIdx !== -1) {
+                placeWordInCloze(firstEmptyIdx, word);
+                return;
+            } else {
+                selectedWordChip = word;
+                playSound('pop');
+            }
+            refreshInteractiveSection();
+        }
+
+        function onClozeSlotClick(slotIdx) {
+            if (currentAnswered) return;
+            playSound('pop');
+            if (selectedWordChip) {
+                placeWordInCloze(slotIdx, selectedWordChip);
+            } else if (clozeState[slotIdx] !== null) {
+                clozeState[slotIdx] = null;
+                refreshInteractiveSection();
+            }
+        }
+
+        function placeWordInCloze(slotIdx, word) {
+            const existingIdx = clozeState.indexOf(word);
+            if (existingIdx !== -1) clozeState[existingIdx] = null;
+            clozeState[slotIdx] = word;
+            selectedWordChip = null;
+            playSound('pop');
+            refreshInteractiveSection();
+        }
+
+        /********************************************************************
+         * 6. AUFGABENTYP B: BILD-ZUORDNUNG IM QUERFORMAT (NEBENEINANDER)
+         ********************************************************************/
+        function buildMatchLandscapeHtml(q) {
+            const assignedItemIds = Object.values(matchState).flat();
+            const unassignedItems = q.items.filter(item => !assignedItemIds.includes(item.id));
+
+            const poolHtml = unassignedItems.length > 0 ? unassignedItems.map(item => {
+                const isSelected = selectedMatchItem === item.id;
+                return `
+                    <div draggable="${!currentAnswered}"
+                         ondragstart="onMatchDragStart(event, '${item.id}')"
+                         onclick="onMatchItemClick('${item.id}')"
+                         class="bg-white border-4 ${isSelected ? 'border-amber-500 bg-amber-50 scale-105 ring-4 ring-amber-300' : 'border-[#4a7853]'} rounded-2xl px-4 py-2 shadow-md cursor-pointer transition flex items-center gap-3">
+                        ${renderIllustration(item.img, "w-20 h-20 lg:w-24 lg:h-24")}
+                        <span class="text-sm lg:text-base font-extrabold text-[#2c4c32] max-w-[130px] leading-tight">${item.name}</span>
+                    </div>
+                `;
+            }).join('') : `<p class="text-base lg:text-lg font-extrabold text-[#4a7853] py-4">✨ Alle Bilder sind zugeordnet! Tippe jetzt unten rechts auf „Prüfen ✔“.</p>`;
+
+            const gridColsClass = q.targets.length === 2 ? 'grid-cols-2' : 'grid-cols-3';
+
+            const targetsHtml = q.targets.map(target => {
+                const assignedIds = matchState[target.id] || [];
+                const assignedCards = assignedIds.map(id => {
+                    const item = q.items.find(it => it.id === id);
+                    return `
+                        <div id="placed-item-${item.id}"
+                             onclick="removeMatchedItem(event, '${target.id}', '${item.id}')"
+                             class="bg-white border-2 border-[#3b7a47] rounded-2xl p-2 shadow-sm cursor-pointer transition flex flex-col items-center text-center relative">
+                            <span class="absolute top-1 right-1 text-xs bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center font-bold">✕</span>
+                            ${renderIllustration(item.img, "w-20 h-20 lg:w-24 lg:h-24")}
+                            <span class="text-xs font-extrabold text-gray-800 mt-0.5 leading-tight">${item.name}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div id="match-target-${target.id}"
+                         ondragover="onMatchDragOver(event, '${target.id}')"
+                         ondragleave="onMatchDragLeave(event, '${target.id}')"
+                         ondrop="onMatchDrop(event, '${target.id}')"
+                         onclick="onMatchTargetClick('${target.id}')"
+                         class="match-dropzone ${selectedMatchItem ? 'ready-to-place' : ''} p-3 flex flex-col items-center justify-between cursor-pointer h-full">
+                        <div class="w-full bg-[#4a7853] text-white font-extrabold text-base lg:text-lg py-2 px-3 rounded-xl text-center shadow-sm">
+                            ${target.label}
+                        </div>
+                        <div class="flex-1 flex flex-wrap items-center justify-center gap-2 py-2 w-full">
+                            ${assignedCards || `<span class="text-sm font-extrabold ${selectedMatchItem ? 'text-amber-700 animate-pulse' : 'text-gray-400'}">${selectedMatchItem ? '👉 Hierhin tippen!' : 'Hier ablegen'}</span>`}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            return `
+                <div class="flex flex-col justify-between gap-3.5 h-full">
+                    <!-- Obere Leiste: Bilder-Vorrat -->
+                    <div class="bg-[#edf4e6] border-2 border-[#b5cfa4] rounded-2xl p-2.5 flex flex-wrap items-center justify-center gap-4 min-h-[112px] shrink-0">
+                        ${poolHtml}
+                    </div>
+
+                    <!-- Untere Spalten: Ziel-Boxen nebeneinander -->
+                    <div class="grid ${gridColsClass} gap-4 flex-1 min-h-0">
+                        ${targetsHtml}
+                    </div>
+                </div>
+            `;
+        }
+
+        function onMatchDragStart(e, itemId) {
+            if (currentAnswered) return;
+            e.dataTransfer.setData('text/plain', itemId);
+            selectedMatchItem = itemId;
+        }
+
+        function onMatchDragOver(e, targetId) {
+            if (currentAnswered) return;
+            e.preventDefault();
+            document.getElementById(`match-target-${targetId}`)?.classList.add('drag-over');
+        }
+
+        function onMatchDragLeave(e, targetId) {
+            document.getElementById(`match-target-${targetId}`)?.classList.remove('drag-over');
+        }
+
+        function onMatchDrop(e, targetId) {
+            if (currentAnswered) return;
+            e.preventDefault();
+            document.getElementById(`match-target-${targetId}`)?.classList.remove('drag-over');
+            const itemId = e.dataTransfer.getData('text/plain') || selectedMatchItem;
+            if (itemId) assignItemToTarget(itemId, targetId);
+        }
+
+        function onMatchItemClick(itemId) {
+            if (currentAnswered) return;
+            playSound('pop');
+            selectedMatchItem = (selectedMatchItem === itemId) ? null : itemId;
+            refreshInteractiveSection();
+        }
+
+        function onMatchTargetClick(targetId) {
+            if (currentAnswered) return;
+            if (selectedMatchItem) {
+                assignItemToTarget(selectedMatchItem, targetId);
+            }
+        }
+
+        function assignItemToTarget(itemId, targetId) {
+            const q = QUESTIONS[currentQuestionIndex];
+            Object.keys(matchState).forEach(tKey => {
+                matchState[tKey] = matchState[tKey].filter(id => id !== itemId);
+            });
+            matchState[targetId].push(itemId);
+
+            // Nächstes noch freies Bild automatisch auswählen für flüssiges Tablet-Tippen
+            const assignedIds = Object.values(matchState).flat();
+            const nextUnassigned = q.items.find(it => !assignedIds.includes(it.id));
+            selectedMatchItem = nextUnassigned ? nextUnassigned.id : null;
+
+            playSound('pop');
+            refreshInteractiveSection();
+        }
+
+        function removeMatchedItem(e, targetId, itemId) {
+            e.stopPropagation();
+            if (currentAnswered) return;
+            matchState[targetId] = matchState[targetId].filter(id => id !== itemId);
+            selectedMatchItem = itemId;
+            playSound('pop');
+            refreshInteractiveSection();
+        }
+
+        function refreshInteractiveSection() {
+            const q = QUESTIONS[currentQuestionIndex];
+            const container = document.getElementById('interactive-area');
+            if (!container) return;
+            if (q.type === 'cloze') {
+                container.innerHTML = buildClozeLandscapeHtml(q);
+            } else if (q.type === 'match_pairs') {
+                container.innerHTML = buildMatchLandscapeHtml(q);
+            }
+        }
+
+        /********************************************************************
+         * 7. AUFGABENTYP C: OFFENE FRAGEN MIT LINEATUR (OHNE UMLAUT-BUTTONS!)
+         ********************************************************************/
+        function buildOpenLandscapeHtml(q) {
+            return `
+                <div class="grid grid-cols-12 gap-6 items-center h-full">
+                    ${buildLeftIllustrationPanel(q.images)}
+
+                    <div class="col-span-7 bg-[#f4f8f0] border-3 border-[#7fa668] rounded-3xl p-6 flex flex-col justify-center h-full shadow-inner">
+                        <label for="open-answer-input" class="block text-xl lg:text-2xl font-extrabold text-[#1f3a24] mb-5 leading-snug">
+                            ${q.question}
+                        </label>
+
+                        <!-- Grundschul-Lineatur Klasse 2 & 3 (ohne jegliche Buchstaben-Hilfsbuttons darunter) -->
+                        <div class="lineatur-box border-3 border-[#4a7853] rounded-2xl px-4 py-3 shadow-inner bg-white">
+                            <input id="open-answer-input" 
+                                   type="text" 
+                                   autocomplete="off"
+                                   autocorrect="off"
+                                   spellcheck="false"
+                                   placeholder="${q.placeholder}"
+                                   class="lineatur-input w-full h-14 text-2xl lg:text-3xl font-extrabold text-[#1f2937] focus:outline-none"/>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /********************************************************************
+         * 8. ANTWORT PRÜFEN & WEITER ZUR NÄCHSTEN FRAGE
+         ********************************************************************/
+        function normalizeText(str) {
+            return (str || '')
+                .toLowerCase()
+                .trim()
+                .replace(/[.!,?]/g, '')
+                .replace(/\s+/g, ' ');
+        }
+
+        function checkCurrentAnswer() {
+            if (currentAnswered) return;
+            const q = QUESTIONS[currentQuestionIndex];
+            let isCorrect = false;
+
+            if (q.type === 'cloze') {
+                if (clozeState.some(val => val === null)) {
+                    showGentleReminder('Bitte fülle zuerst alle Lücken aus!');
+                    return;
+                }
+                const expectedWords = q.segments.filter(s => typeof s === 'object' && s.blank).map(s => s.blank);
+                let allRight = true;
+                expectedWords.forEach((exp, idx) => {
+                    const slotEl = document.getElementById(`cloze-slot-${idx}`);
+                    if (clozeState[idx] === exp) {
+                        slotEl?.classList.add('correct-slot');
+                    } else {
+                        allRight = false;
+                        slotEl?.classList.add('wrong-slot');
+                    }
+                });
+                isCorrect = allRight;
+            }
+            else if (q.type === 'match_pairs') {
+                const totalPlaced = Object.values(matchState).flat().length;
+                if (totalPlaced < q.items.length) {
+                    showGentleReminder('Bitte ordne zuerst alle Bilder zu!');
+                    return;
+                }
+                let allRight = true;
+                q.items.forEach(item => {
+                    const placedInCorrect = (matchState[item.targetId] || []).includes(item.id);
+                    const el = document.getElementById(`placed-item-${item.id}`);
+                    if (placedInCorrect) {
+                        el?.classList.add('ring-4', 'ring-green-500', 'bg-green-50');
+                    } else {
+                        allRight = false;
+                        el?.classList.add('ring-4', 'ring-red-500', 'bg-red-50');
+                    }
+                });
+                isCorrect = allRight;
+            }
+            else if (q.type === 'open') {
+                const input = document.getElementById('open-answer-input');
+                const rawVal = input ? input.value.trim() : '';
+                if (!rawVal) {
+                    showGentleReminder('Bitte schreibe zuerst eine Antwort in die Zeile!');
+                    return;
+                }
+                const norm = normalizeText(rawVal);
+                isCorrect = q.acceptedAnswers.some(ans => norm === ans || norm.includes(ans));
+                if (input) {
+                    input.disabled = true;
+                }
+            }
+
+            currentAnswered = true;
+            userResults[currentQuestionIndex] = { correct: isCorrect };
+            playSound(isCorrect ? 'correct' : 'wrong');
+
+            const hintBox = document.getElementById('hint-box');
+            const feedbackBox = document.getElementById('feedback-box');
+            if (hintBox) hintBox.classList.add('hidden');
+
+            if (feedbackBox) {
+                feedbackBox.classList.remove('hidden');
+                if (isCorrect) {
+                    feedbackBox.className = 'rounded-2xl px-4 py-2 border-2 border-green-600 bg-green-100 text-green-950 flex items-center gap-2.5 animate-pop';
+                    feedbackBox.innerHTML = `
+                        <span class="text-2xl shrink-0">🌟</span>
+                        <div class="leading-snug">
+                            <span class="font-extrabold text-green-900">Super, richtig!</span>
+                            <span class="font-bold ml-1">${q.explanation}</span>
+                        </div>
+                    `;
+                } else {
+                    let solutionHint = '';
+                    if (q.type === 'open' && q.sampleSolution) {
+                        solutionHint = ` <span class="font-extrabold underline">(Lösung: ${q.sampleSolution})</span>`;
+                    } else if (q.type === 'cloze') {
+                        const expectedWords = q.segments.filter(s => typeof s === 'object' && s.blank).map(s => s.blank).join(', ');
+                        solutionHint = ` <span class="font-extrabold underline">(Richtig: ${expectedWords})</span>`;
+                    }
+                    feedbackBox.className = 'rounded-2xl px-4 py-2 border-2 border-amber-600 bg-amber-100 text-amber-950 flex items-center gap-2.5 animate-pop';
+                    feedbackBox.innerHTML = `
+                        <span class="text-2xl shrink-0">🐿️</span>
+                        <div class="leading-snug">
+                            <span class="font-extrabold text-amber-900">Merke dir:</span>
+                            <span class="font-bold ml-1">${q.explanation}</span>${solutionHint}
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('check-btn')?.classList.add('hidden');
+            document.getElementById('next-btn')?.classList.remove('hidden');
+        }
+
+        function showGentleReminder(msg) {
+            playSound('pop');
+            const hintBox = document.getElementById('hint-box');
+            const feedbackBox = document.getElementById('feedback-box');
+            if (hintBox) hintBox.classList.add('hidden');
+            if (!feedbackBox) return;
+            feedbackBox.classList.remove('hidden');
+            feedbackBox.className = 'rounded-2xl px-4 py-2 border-2 border-amber-500 bg-amber-50 text-amber-950 font-extrabold text-base flex items-center gap-2 animate-pop';
+            feedbackBox.innerHTML = `<span class="text-xl">🦉</span> <span>${msg}</span>`;
+        }
+
+        function nextQuestion() {
+            if (currentQuestionIndex < QUESTIONS.length - 1) {
+                loadQuestionPage(currentQuestionIndex + 1);
+            } else {
+                showResultSlide();
+            }
+        }
+
+        /********************************************************************
+         * 9. ABSCHLUSS-FOLIE IM QUERFORMAT (NACH FRAGE 25)
+         ********************************************************************/
+        function showResultSlide() {
+            const totalCorrect = userResults.filter(r => r && r.correct).length;
+            const totalQuestions = QUESTIONS.length;
+
+            playSound('fanfare');
+            startConfetti();
+
+            let rankTitle = '';
+            let rankEmoji = '';
+            let rankMessage = '';
+
+            if (totalCorrect >= 22) {
+                rankTitle = 'Wald-Meister!';
+                rankEmoji = '🏆🌳👑';
+                rankMessage = 'Wahnsinn! Du kennst alle Laubbäume und Nadelbäume des Waldes wie ein echter Profi!';
+            } else if (totalCorrect >= 16) {
+                rankTitle = 'Toller Baum-Detektiv!';
+                rankEmoji = '🕵️‍♂️🌿🌰';
+                rankMessage = 'Super gemacht! Du weißt schon richtig viel über die Bäume im Wald.';
+            } else if (totalCorrect >= 10) {
+                rankTitle = 'Fleißiger Wald-Entdecker!';
+                rankEmoji = '🐿️🌱';
+                rankMessage = 'Gut gemacht! Du kennst schon viele Bäume und ihre Früchte.';
+            } else {
+                rankTitle = 'Junger Wald-Forscher!';
+                rankEmoji = '🌱🦉';
+                rankMessage = 'Toll, dass du alle 25 Fragen geschafft hast! Probier es gleich noch einmal!';
+            }
+
+            const card = document.getElementById('quiz-card');
+            card.innerHTML = `
+                <div class="animate-pop h-full grid grid-cols-12 gap-6 items-center">
+                    
+                    <!-- Links: Großes Punkte-Abzeichen -->
+                    <div class="col-span-5 bg-gradient-to-b from-[#f3f9ec] to-[#e4f0d8] border-4 border-[#4a7853] rounded-3xl p-6 h-full flex flex-col items-center justify-center text-center shadow-inner">
+                        <div class="text-6xl mb-3 mascot-float">${rankEmoji}</div>
+                        <div class="inline-flex flex-col items-center justify-center bg-white border-4 border-[#3b7a47] rounded-full w-48 h-48 shadow-lg">
+                            <span class="text-sm font-extrabold uppercase text-gray-500">Du hast</span>
+                            <span class="school-title text-5xl font-extrabold text-[#2c4c32] my-1">
+                                ${totalCorrect} <span class="text-2xl text-gray-500">von</span> ${totalQuestions}
+                            </span>
+                            <span class="text-base font-extrabold text-emerald-700 bg-emerald-100 px-4 py-0.5 rounded-full">
+                                richtig!
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Rechts: Urkunden-Text & Neustart-Button -->
+                    <div class="col-span-7 flex flex-col justify-center items-start h-full px-4">
+                        <span class="bg-amber-100 text-amber-900 border-2 border-amber-400 font-extrabold text-sm px-4 py-1 rounded-full mb-3">
+                            🎉 Quiz geschafft!
+                        </span>
+                        <h2 class="school-title text-4xl lg:text-5xl font-extrabold text-[#1f3a24] mb-3">
+                            ${rankTitle}
+                        </h2>
+                        <p class="text-xl lg:text-2xl font-bold text-[#2c4c32] leading-relaxed mb-6">
+                            ${rankMessage}
+                        </p>
+
+                        <!-- Dekorative Baum-Reihe -->
+                        <div class="flex items-center gap-3 mb-8 bg-[#f1f6ec] p-3 rounded-2xl border-2 border-[#b5cfa4]">
+                            ${renderIllustration('eiche_blatt', 'w-14 h-14')}
+                            ${renderIllustration('kastanie_frucht', 'w-14 h-14')}
+                            ${renderIllustration('ahorn_frucht', 'w-14 h-14')}
+                            ${renderIllustration('linde_blatt', 'w-14 h-14')}
+                            ${renderIllustration('tanne_zapfen', 'w-14 h-14')}
+                            ${renderIllustration('laerche_zapfen', 'w-14 h-14')}
+                        </div>
+
+                        <button onclick="restartQuiz()" 
+                                class="px-9 py-4 rounded-2xl font-extrabold text-xl bg-[#4a7853] active:bg-[#3a6142] text-white shadow-[0_6px_0_#26422b] active:translate-y-0.5 transition flex items-center gap-3">
+                            <span>↻</span>
+                            <span>Noch einmal spielen</span>
+                        </button>
+                    </div>
+
+                </div>
+            `;
+        }
+
+        function restartQuiz() {
+            userResults = new Array(QUESTIONS.length).fill(null);
+            showStartSlide();
+        }
+
+        /********************************************************************
+         * 10. KONFETTI-ANIMATION FÜR DIE ABSCHLUSS-FOLIE
+         ********************************************************************/
+        let confettiInterval = null;
+        function startConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const pieces = Array.from({ length: 85 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height - canvas.height,
+                r: Math.random() * 6 + 4,
+                d: Math.random() * 3 + 2,
+                color: ['#4a7853', '#84cc16', '#f59e0b', '#10b981', '#d97706', '#22c55e'][Math.floor(Math.random() * 6)]
+            }));
+
+            let frames = 0;
+            clearInterval(confettiInterval);
+            confettiInterval = setInterval(() => {
+                frames++;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (frames > 220) {
+                    stopConfetti();
+                    return;
+                }
+                pieces.forEach(p => {
+                    p.y += p.d;
+                    p.x += Math.sin(frames * 0.03) * 1.2;
+                    ctx.beginPath();
+                    ctx.fillStyle = p.color;
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }, 25);
+        }
+
+        function stopConfetti() {
+            clearInterval(confettiInterval);
+            const canvas = document.getElementById('confetti-canvas');
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        window.onload = function() {
+            showStartSlide();
+        };
+    </script>
+</body>
+</html>
